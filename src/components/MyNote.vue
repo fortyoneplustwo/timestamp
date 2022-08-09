@@ -1,16 +1,11 @@
 <template>
-  <!-- <button id='timestamp'>t={{ id }}</button> -->
-  <div id='line' ref='textarea' >
-    <button id='timestamp'>t={{ id }}</button>
-    <hr id="separator">
-    <span id="textarea"> {{ text }} </span>
-    <input class='checkbox' type="checkbox" v-if="mode">
-  </div>  
-  <!-- <button id='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
-  
-
+  <div class='note-container' @dblclick="handleDoubleClick">
+    <button class='timestamp'>t={{ id }}</button>
+    <hr class="separator">
+    <span ref="textarea" class="textarea" contenteditable="false" @blur="handleLoseFocus"> {{ text }} </span>
+    <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button>
+  </div>
 </template>
-
 
 <script>
 export default {
@@ -26,22 +21,23 @@ export default {
     }
   },
   methods: {
+    handleDoubleClick() {
+      this.$refs.textarea.contentEditable = true;
+      this.$refs.textarea.focus();
+    },
+    handleLoseFocus() {
+      this.$refs.textarea.contentEditable = false;
+      // emit note-edited(this.$refs.textarea.textContent, note.id);
+    },
     copy() {
-      /* Need to append text to document body for copying to clipboard. Rewrite this using API */
-      let text = this.$refs.textarea.innerText
-      let elem = document.createElement("textarea")
-      document.body.appendChild(elem)
-      elem.value = text
-      elem.select()
-      document.execCommand("copy")
-      document.body.removeChild(elem)
+      navigator.clipboard.writeText(this.text);
     }
   }
 }
 </script>
 
 <style scoped>
-  #line {
+.note-container {
   display: flex;
   height:  auto;
   width: 100%;
@@ -51,7 +47,6 @@ export default {
   border-inline-end-style: hidden;
   border-inline-start-style: hidden;
   border-top: none; 
-  /* border-color: #efe6d5; */
   border-color: rgb(30, 108, 253);
   box-sizing: border-box;
   white-space: pre-wrap;
@@ -60,8 +55,7 @@ export default {
   word-break: break-all;
 }
 
-
-#timestamp {
+.timestamp {
   width: 70px;
   text-align: center;
   display: inline-block;
@@ -86,17 +80,21 @@ export default {
   margin-left: auto;
 }
 
-#separator{
+.separator{
   margin-left: 0;
   margin-right: 2%;
   margin-top: -2%;
-  margin-bottom: -5%;
+  margin-bottom: -10%;
   border-color: red;
-  /* align-self: stretch; */
+  z-index: 1;
 }
 
-#textarea {
-  margin-right: auto;
+.textarea {
+  margin-right: 1%;
+  font-family:Georgia, 'Times New Roman', Times, serif;
+}
+
+.highlight {
+  background-color: #ff0;
 }
 </style>
-

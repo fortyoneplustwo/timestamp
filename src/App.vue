@@ -1,21 +1,21 @@
 <template>
   <div class='container'>
-    <div id='header'>
-          <h1 id='title'>Time:stamp</h1>
-          <div id='controls'>
-            <button @click='toggle_record'>record</button>
-            <button>rewind</button>
-            <button @click='toggle_play'>play</button>
-            <button>forward</button>
+    <div class='header'>
+          <h1 class='title'>Time:stamp</h1>
+          <div class='recorder-container'>
+            <button @click='handleRecButton'>⏺</button>
+            <button @click='handlePlayButton'>▶️</button>
+            <input type="range" id="seek-slider">
+            <button @click="handleSaveButton">⬇️</button>
           </div>
     </div>
-    <div id='canvas'>
-      <div id='page'>
+    <div class='canvas'>
+      <div class='page'>
         <MyPage :notes="notes" :mode="mode" />
       </div>
     </div> 
-    <div id="editor">
-        <MyEditor :mode="mode" @add-note="addnote" @toggle-mode="toggle_mode" :id="set_new_id"/>
+    <div class="editor">
+        <MyEditor :mode="mode" @add-note="addnote" @toggle-mode="toggle_mode" :time="0"/>
     </div>
   </div>
 </template>
@@ -33,8 +33,12 @@ export default {
   data() {
     return {
       notes: [],
-      mode: Boolean
-      }
+      mode: Boolean,
+      isRecording: Boolean,
+      isPlaying: Boolean,
+      mediaRecorder: Object,
+      chunks: []
+    }
   },
   created() {
     this.notes= [
@@ -42,38 +46,73 @@ export default {
       {id: "2",text: "b"}, {id: "3",text: "c"},{id: "4",text: "d"},{id: "5",text: "e"}
     ];
     this.mode = false;
+    this.initRecorder();
+    this.isRecording = false;
+    this.isPlaying = false;
   },
   methods: {
     addnote(t, content) {
       // t is unused for now
       this.notes.push({id: this.notes.length+1, text: content})
     },
-    toggle_record(el) {
-      const elem = el.target
-      if (elem.textContent == 'record') {
-        elem.textContent = 'pause'
+    handleRecButton(e) {
+      const btn = e.target;
+      if (!this.isRecording) {
+        this.mediaRecorder.start();
+        btn.textContent = '⏹';
+        this.isRecording = true;
+        console.log(this.mediaRecorder.state); // debug
       } else {
-        elem.textContent = 'record'
+        this.mediaRecorder.stop();
+        btn.textContent = '⏺';
+        this.isRecording = false;
+        console.log(this.mediaRecorder.state);  // debug
       }
     },
-    toggle_play(el) {
-      const elem = el.target
-      if (elem.textContent == 'play') {
-        elem.textContent = 'pause'
+    handlePlayButton(e) {
+      const btn = e.target;
+      if (!this.isPlaying) {
+        btn.textContent = '⏸';
+        this.isPlaying = true;
       } else {
-        elem.textContent = 'play'
+        btn.textContent = '▶️';
+        this.isPlaying = false;
       }
+    },
+    handleSaveButton() {
+
     },
     toggle_mode(value) {
       this.mode = value;
+    },
+    initRecorder() {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        console.log("getUserMedia supported.");
+        navigator.mediaDevices
+          .getUserMedia({ audio: true, })
+          // Success callback
+          .then((stream) => {
+            // Register listeners for 'record' and 'save' 
+            // only if initialization is successful.
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.mediaRecorder.ondataavailable = (e) => {
+              this.chunks.push(e.data);
+            }
+          })
+          // Error callback
+          .catch(function (err) {
+            console.error(`The following getUserMedia error occurred: ${err}`);
+          });
+      } else {
+        console.log("getUserMedia not supported on your browser!");
+      }
     }
-
   }
 }
 </script>
 
 <style>
-#app{
+.app{
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -87,11 +126,9 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  /* background-color: palegoldenrod; */
-  /* color: white; */
 }
 
-#controls {
+.controls {
   display: flex;
   flex-direction: row;
   width: 100%;
@@ -99,15 +136,15 @@ export default {
   gap: 1%;
 }
 
-#title {
+.title {
   text-align: center;
 }
 
-#recorder {
+.recorder {
   text-align: center;
 }
 
-#page {
+.page {
   display: flex;
   flex-direction: column-reverse;
   margin-left: 15%;
@@ -117,12 +154,11 @@ export default {
   border-color: lightcoral;
   border-radius: 10px;
   padding: 0.5%;
-  min-height: fit-content;
-  /* background-color: lightgoldenrodyellow; */
+  min-height: 20%;
   background-color: #f2eecb;
 }
 
-#canvas {
+.canvas {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -131,20 +167,24 @@ export default {
 
 }
 
-#editor {
+.editor {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   background-color: lightsalmon;
   padding: 1%;
-  margin-top: 2%;
+  margin-top: 5%;
   min-height: 10%;
   border-style: ridge;
   border-color: coral;
   border-radius: 10px;
 }
 
-#controls {
-  margin-bottom: 2%;
+.recorder-container {
+  margin-bottom: 5%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 1%;
 }
 </style>

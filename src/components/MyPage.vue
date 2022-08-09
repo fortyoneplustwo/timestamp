@@ -1,9 +1,6 @@
 <template>
-  <!-- <li id="saved-note" :key="note.id" v-for="note in notes">
-    <MyNote :note="note" v-bind:mode="mode"/>
-  </li> -->
   <ul class="list" style="list-style-type: none; margin: 0; padding: 0;">
-    <li id="saved-note" v-for="note in notes" :key="note.id">
+    <li class="saved-note" v-for="note in notes" :key="note.id">
       <MyNote :note="note" v-bind:mode="mode"/>
 		</li>
   </ul>
@@ -12,7 +9,6 @@
 
 <script> 
 import MyNote from './MyNote.vue'
-
 
 export default {
   name: 'MyPage',
@@ -26,10 +22,8 @@ export default {
 }
 </script>
 
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-#saved-note {
+.saved-note {
   display: flex;
   flex-direction: row;
   margin: 0.2%;
