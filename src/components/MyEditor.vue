@@ -1,7 +1,7 @@
 <template>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <button @click="toggleEditMode"  value="write" class='mode-button'>Edit</button>
-  <span ref='textarea' class="textarea" :onkeydown="dblenter" v-if="!mode"></span>
+  <span contenteditable="true" ref='textarea' class="textarea" :onkeydown="dblenter" v-if="!mode"></span>
   <button v-if="mode" class="edit-options" ><i class="fa fa-copy"></i></button>
   <button v-if="mode" class="edit-options" ><i class="fa fa-trash"></i></button>
   <button v-if="mode" class="edit-options" ><i class="fa fa-undo"></i></button>

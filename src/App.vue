@@ -37,7 +37,8 @@ export default {
       isRecording: Boolean,
       isPlaying: Boolean,
       mediaRecorder: Object,
-      chunks: []
+      chunks: [],
+      audio: Object
     }
   },
   created() {
@@ -49,6 +50,7 @@ export default {
     this.initRecorder();
     this.isRecording = false;
     this.isPlaying = false;
+    this.audio = document.createElement("audio");
   },
   methods: {
     addnote(t, content) {
@@ -74,14 +76,14 @@ export default {
       if (!this.isPlaying) {
         btn.textContent = '⏸';
         this.isPlaying = true;
+        this.audio.play();
       } else {
         btn.textContent = '▶️';
         this.isPlaying = false;
+        this.audio.pause();
       }
     },
-    handleSaveButton() {
-
-    },
+    handleSaveButton() {},
     toggle_mode(value) {
       this.mode = value;
     },
@@ -97,6 +99,12 @@ export default {
             this.mediaRecorder = new MediaRecorder(stream);
             this.mediaRecorder.ondataavailable = (e) => {
               this.chunks.push(e.data);
+            }
+            this.mediaRecorder.onstop = () => {
+              // set audio source to chunks[]
+              const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
+              const audioURL = window.URL.createObjectURL(blob);
+              this.audio.src = audioURL;
             }
           })
           // Error callback
