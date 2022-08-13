@@ -3,9 +3,10 @@
     <div class='header'>
           <h1 class='title'>Time:stamp</h1>
           <div class='recorder-container'>
-            <button @click='handleRecButton'>⏺</button>
+            <button ref="recBtn" @click='handleRecButton'>⏺</button>
+            <button ref="stopBtn" disabled="true" @click="handleStopButton">⏹</button>
             <audio controls ref="audio"></audio>
-            <button @click="handleSaveButton">⬇️</button>
+            <button ref="saveBtn" disabled="true" @click="handleSaveButton">⬇️</button>
           </div>
     </div>
     <div class='canvas'>
@@ -36,7 +37,8 @@ export default {
       mediaRecorder: Object,
       chunks: [],
       recTimeIntervals: [],
-      recStarted: Boolean
+      recStarted: Boolean,
+      recStopped: Boolean
     }
   },
   created() {
@@ -83,8 +85,10 @@ export default {
         // console.log(this.mediaRecorder.state);  // debug
       }
     },
-    handleSaveButton() {
+    handleStopButton() {
       this.mediaRecorder.stop();
+      this.$refs.recBtn.textContent = '⏺';
+      this.$refs.recBtn.disabled = true;
     },
     initRecorder() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -97,6 +101,7 @@ export default {
             this.mediaRecorder.onstart = () => {
                const timeRecStarted = new Date();
                this.recTimeIntervals.push(timeRecStarted);
+               this.$refs.stopBtn.disabled = false;
                console.log(timeRecStarted); // debug
             };
             this.mediaRecorder.onresume = () => {
@@ -115,9 +120,11 @@ export default {
             };
             this.mediaRecorder.onstop = () => {
               //this.recStarted = false;
-              const timeRecStopped = new Date();
-              this.recTimeIntervals.push(timeRecStopped);
-              console.log(timeRecStopped); // debug
+              this.timeRecStopped = new Date();
+              this.recTimeIntervals.push(this.timeRecStopped);
+              console.log(this.timeRecStopped); // debug
+              this.$refs.stopBtn.disabled = true;
+              this.$refs.saveBtn.disabled = false;
               const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
               const audioURL = window.URL.createObjectURL(blob);
               this.$refs.audio.src = audioURL;
