@@ -1,6 +1,6 @@
 <template>
   <div class='note-container' @dblclick="handleDoubleClick">
-    <button class='timestamp'>t={{ id }}</button>
+    <button class='timestamp'>{{ id }}</button>
     <hr class="separator">
     <span ref="textarea" class="textarea" contenteditable="false" @blur="handleLoseFocus"> {{ text }} </span>
     <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button>

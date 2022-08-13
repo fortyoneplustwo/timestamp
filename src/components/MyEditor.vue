@@ -1,24 +1,25 @@
 <template>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-  <button @click="toggleEditMode"  value="write" class='mode-button'>Edit</button>
-  <span contenteditable="true" ref='textarea' class="textarea" :onkeydown="dblenter" v-if="!mode"></span>
-  <button v-if="mode" class="edit-options" ><i class="fa fa-copy"></i></button>
-  <button v-if="mode" class="edit-options" ><i class="fa fa-trash"></i></button>
-  <button v-if="mode" class="edit-options" ><i class="fa fa-undo"></i></button>
-  <button @click='addnote' class='return'><span>&#8617;</span> </button>
+  <div class="editorContainer">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <button ref="editBtn" @click="toggleEditMode" value="write" class='mode-button'>Edit</button>
+    <p contenteditable="true" @input="handleNewTimestampOnTextInsert" ref="textarea" class="textarea" :onkeydown="dblenter" v-if="!mode"></p>
+    <button v-if="mode" class="edit-options" ><i class="fa fa-copy"></i></button>
+    <button v-if="mode" class="edit-options" ><i class="fa fa-trash"></i></button>
+    <button v-if="mode" class="edit-options" ><i class="fa fa-undo"></i></button>
+    <button @click='addnote' class='return'><span>&#8617;</span> </button>
+  </div>
 </template>
 
 <script>
 export default {
   name: 'MyEditor',
   props: {
-    time: Number,
     mode: Boolean
   },
   data() {
     return {
-      text: "",
-      waiting_for_press2: false
+      waiting_for_press2: false,
+      timestamp: 0
     }
   },
   methods: {
@@ -26,19 +27,22 @@ export default {
      * Save a new note to our dataset
      */
     addnote() {
-      console.log('success')
+      console.log('pressed');
       const textarea = this.$refs.textarea;
-      const note = textarea.textContent;
+      // remove last line break
+      const note = textarea.innerText.slice(0, -1);
+      console.log(note);
       textarea.innerHTML = '';
-      this.$emit('add-note', this.id, note);
+      this.$emit('add-note', this.timestamp, note);
+      console.log(this.timestamp);
       this.waiting_for_press2 = false;
     },
     /* 
      * Handle 'Enter+Enter' shortcut to submit note.
      * Return false to prevent the event propagation. 
      */
-    dblenter(event) {
-      const key_code = event.keyCode;
+    dblenter(e) {
+      const key_code = e.keyCode;
       if(key_code === 13) { 
         if(this.waiting_for_press2) {
             this.addnote();
@@ -54,7 +58,7 @@ export default {
      * TODO: Make this a toggle swtich.
      */
     toggleEditMode() {
-      const button = document.getElementById('mode-button')
+      const button = this.$refs.editBtn;
       if (button.value === 'write') {
         button.innerHTML = 'Write';
         button.value = 'edit';
@@ -64,6 +68,13 @@ export default {
         button.innerHTML = 'Edit';
         this.$emit('toggle-mode', false);
       }
+    },
+    handleNewTimestampOnTextInsert() {
+      if (this.$refs.textarea.textContent.slice(0, -1).length === 0) {
+        const currTime = new Date();
+        // console.log(currTime); // debug
+        this.timestamp = currTime;
+      }
     }
   }
 }
@@ -71,16 +82,16 @@ export default {
 
 <style scoped>
 .textarea {
-  height: auto;
+  height: fit-content;
+  overflow-y: scroll;
+  max-height: 60%;
   width: 100%;
   padding: 1%;
   border-style: solid;
   border-color: coral;
   border-radius: 10px;
   background-color: white;
-  box-sizing: border-box;
-  white-space: pre-wrap;
-  overflow: scroll;
+  word-wrap: break-word;
   font-family: 'Times New Roman', Times, serif;
   white-space: pre-line;
 }
@@ -108,5 +119,12 @@ export default {
   cursor: pointer;
   outline: none;
   min-width: 10%;
+}
+
+.editorContainer {
+display: flex;
+flex-direction: row;
+justify-content: space-between;
+width: 100%;
 }
 </style>

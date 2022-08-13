@@ -4,8 +4,7 @@
           <h1 class='title'>Time:stamp</h1>
           <div class='recorder-container'>
             <button @click='handleRecButton'>⏺</button>
-            <button @click='handlePlayButton'>▶️</button>
-            <input type="range" id="seek-slider">
+            <audio controls ref="audio"></audio>
             <button @click="handleSaveButton">⬇️</button>
           </div>
     </div>
@@ -34,78 +33,95 @@ export default {
     return {
       notes: [],
       mode: Boolean,
-      isRecording: Boolean,
-      isPlaying: Boolean,
       mediaRecorder: Object,
       chunks: [],
-      audio: Object
+      recTimeIntervals: [],
+      recStarted: Boolean
     }
   },
   created() {
-    this.notes= [
-      {id: "1", text: "a"},
-      {id: "2",text: "b"}, {id: "3",text: "c"},{id: "4",text: "d"},{id: "5",text: "e"}
-    ];
+    // this.notes= [
+    //   {id: "1", text: "a"},
+    //   {id: "2",text: "b"}, {id: "3",text: "c"},{id: "4",text: "d"},{id: "5",text: "e"}
+    // ];
     this.mode = false;
     this.initRecorder();
-    this.isRecording = false;
-    this.isPlaying = false;
-    this.audio = document.createElement("audio");
+    this.recStarted = false;
   },
   methods: {
-    addnote(t, content) {
+    addnote(timestamp, content) {
       // t is unused for now
-      this.notes.push({id: this.notes.length+1, text: content})
+      // this.notes.push({id: this.notes.length+1, text: content})
+      console.log(timestamp - this.recTimeIntervals[0]);
+      var id = 0;
+      if(this.mediaRecorder.state === 'recording') {
+        id = (timestamp - this.recTimeIntervals[this.recTimeIntervals.length - 1]);
+      } else {
+        if(this.recTimeIntervals.length === 0) {
+          id = 0;
+        } else {
+          id = this.$refs.audio.duration;
+        }
+      }
+      this.notes.push({ id:  id, text: content });
     },
     handleRecButton(e) {
       const btn = e.target;
-      if (!this.isRecording) {
-        this.mediaRecorder.start();
-        btn.textContent = '⏹';
-        this.isRecording = true;
-        console.log(this.mediaRecorder.state); // debug
-      } else {
-        this.mediaRecorder.stop();
-        btn.textContent = '⏺';
-        this.isRecording = false;
-        console.log(this.mediaRecorder.state);  // debug
-      }
-    },
-    handlePlayButton(e) {
-      const btn = e.target;
-      if (!this.isPlaying) {
+      if (this.mediaRecorder.state != 'recording') {
+        if (!this.recStarted) {
+          this.recStarted = true;
+          this.mediaRecorder.start();
+        } else {
+          this.mediaRecorder.resume();
+        }
         btn.textContent = '⏸';
-        this.isPlaying = true;
-        this.audio.play();
+        // console.log(this.mediaRecorder.state); // debug
       } else {
-        btn.textContent = '▶️';
-        this.isPlaying = false;
-        this.audio.pause();
+        // assert(this.startTime >= 0); // debug
+        this.mediaRecorder.pause();
+        btn.textContent = '⏺';
+        // console.log(this.mediaRecorder.state);  // debug
       }
     },
-    handleSaveButton() {},
-    toggle_mode(value) {
-      this.mode = value;
+    handleSaveButton() {
+      this.mediaRecorder.stop();
     },
     initRecorder() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        console.log("getUserMedia supported.");
         navigator.mediaDevices
           .getUserMedia({ audio: true, })
           // Success callback
           .then((stream) => {
-            // Register listeners for 'record' and 'save' 
-            // only if initialization is successful.
+            // Handle events from the recorder 
             this.mediaRecorder = new MediaRecorder(stream);
+            this.mediaRecorder.onstart = () => {
+               const timeRecStarted = new Date();
+               this.recTimeIntervals.push(timeRecStarted);
+               console.log(timeRecStarted); // debug
+            };
+            this.mediaRecorder.onresume = () => {
+              const timeRecResumed = new Date();
+              this.recTimeIntervals.push(timeRecResumed);
+              console.log(timeRecResumed); // debug
+              this.mediaRecorder.requestData();
+            };
             this.mediaRecorder.ondataavailable = (e) => {
               this.chunks.push(e.data);
-            }
+            };
+            this.mediaRecorder.onpause = () => {
+              const timeRecPaused = new Date();
+              this.recTimeIntervals.push(timeRecPaused);
+              console.log(timeRecPaused); // debug
+            };
             this.mediaRecorder.onstop = () => {
-              // set audio source to chunks[]
+              //this.recStarted = false;
+              const timeRecStopped = new Date();
+              this.recTimeIntervals.push(timeRecStopped);
+              console.log(timeRecStopped); // debug
               const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
               const audioURL = window.URL.createObjectURL(blob);
-              this.audio.src = audioURL;
-            }
+              this.$refs.audio.src = audioURL;
+            };
           })
           // Error callback
           .catch(function (err) {
@@ -172,13 +188,10 @@ export default {
   justify-content: center;
   flex:  2;
   min-height: 40%;
-
 }
 
 .editor {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+   display: flex;
   background-color: lightsalmon;
   padding: 1%;
   margin-top: 5%;
