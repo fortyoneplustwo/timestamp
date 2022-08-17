@@ -15,7 +15,7 @@
       </div>
     </div> 
     <div class="editor">
-        <MyEditor :mode="mode" @add-note="addnote" @toggle-mode="toggle_mode" :time="0"/>
+        <MyEditor :mode="mode" @add-note="addnote"/>
     </div>
   </div>
 </template>
@@ -51,21 +51,45 @@ export default {
     this.recStarted = false;
   },
   methods: {
-    addnote(timestamp, content) {
-      // t is unused for now
-      // this.notes.push({id: this.notes.length+1, text: content})
-      console.log(timestamp - this.recTimeIntervals[0]);
-      var id = 0;
+    /*
+     * Given actual date  on which note was taken,
+     * compute the timestamp relative to the date when the recording first started.
+     */
+    computeTimestamp(dateNoteTaken) {
+      // TODO replace this algorithm with one that uses an accumulator
+      // so as toavois O(n) cost each time a note is added.
+      // But keep recTimeIntervals log just in case we need it later.
+      var timestamp = 0;
       if(this.mediaRecorder.state === 'recording') {
-        id = (timestamp - this.recTimeIntervals[this.recTimeIntervals.length - 1]);
+        // Can assume recTimeIntervals. length is odd and the last log is a record log
+        for(var i = 0; i < this.recTimeIntervals.length - 2; i+=2) {
+          const timeRecPaused = this.recTimeIntervals[i+1];
+          const timeRecResumed = this.recTimeIntervals[i];
+          timestamp += timeRecPaused - timeRecResumed;
+        }
+        timestamp += dateNoteTaken - this.recTimeIntervals[this.recTimeIntervals.length - 1];
       } else {
         if(this.recTimeIntervals.length === 0) {
-          id = 0;
+          timestamp = 0;
         } else {
-          id = this.$refs.audio.duration;
+          // Can assume recTimeIntervals.length is even and the last log is a pause log
+          for(var i = 0; i < this.recTimeIntervals.length - 1; i+=2) {
+            const timeRecPaused = this.recTimeIntervals[i+1];
+            const timeRecResumed = this.recTimeIntervals[i];
+            timestamp += timeRecPaused - timeRecResumed;
+          }
         }
       }
-      this.notes.push({ id:  id, text: content });
+      return timestamp;
+    },
+    addnote(dateNoteTaken, content) {
+      // this.notes.push({id: this.notes.length+1, text: content})
+      // console.log(dateNoteTaken - this.recTimeIntervals[0]);
+      const timestamp = this.computeTimestamp(dateNoteTaken);
+      this.notes.push({ id: timestamp, text: content });
+      for(var i = 0; i < this.recTimeIntervals.length; i++) { console.log('intervals: %s', this.recTimeIntervals[i]); }
+      console.log('---------');
+      console.log('date note taken: %s', dateNoteTaken);
     },
     handleRecButton(e) {
       const btn = e.target;
@@ -86,9 +110,54 @@ export default {
       }
     },
     handleStopButton() {
+      // If somehow the recording has stopped without being paused
+      //  for e.g. disconnected microphone
+      //  then append current date to our recTimeIntervals array.
+      // This ensures the length of our array is always even when not recording.
+      if(this.recTimeIntervals.length / 2 != 0) {
+        const timeRecStopped = new Date();
+        this.recTimeIntervals.push(timeRecStopped);
+      }
       this.mediaRecorder.stop();
       this.$refs.recBtn.textContent = '⏺';
       this.$refs.recBtn.disabled = true;
+    },
+    handleRecStartEvent() {
+      this.mediaRecorder.onstart = () => {
+        const timeRecStarted = new Date();
+        this.recTimeIntervals.push(timeRecStarted);
+        this.$refs.stopBtn.disabled = false;
+      };
+    },
+    handleRecResumeEvent() {
+      this.mediaRecorder.onresume = () => {
+        const timeRecResumed = new Date();
+        this.recTimeIntervals.push(timeRecResumed);
+        this.mediaRecorder.requestData();
+      };
+    },
+    handleRecDataAvailableEvent() {
+      this.mediaRecorder.ondataavailable = (e) => {
+        this.chunks.push(e.data);
+      };
+    },
+    handleRecPauseEvent() {
+      this.mediaRecorder.onpause = () => {
+        const timeRecPaused = new Date();
+        this.recTimeIntervals.push(timeRecPaused);
+      };
+    },
+    handleRecStopEvent() {
+      this.mediaRecorder.onstop = () => {
+        //this.recStarted = false;
+        this.timeRecStopped = new Date();
+        this.recTimeIntervals.push(this.timeRecStopped);
+        this.$refs.stopBtn.disabled = true;
+        this.$refs.saveBtn.disabled = false;
+        const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
+        const audioURL = window.URL.createObjectURL(blob);
+        this.$refs.audio.src = audioURL;
+      };
     },
     initRecorder() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -96,39 +165,12 @@ export default {
           .getUserMedia({ audio: true, })
           // Success callback
           .then((stream) => {
-            // Handle events from the recorder 
             this.mediaRecorder = new MediaRecorder(stream);
-            this.mediaRecorder.onstart = () => {
-               const timeRecStarted = new Date();
-               this.recTimeIntervals.push(timeRecStarted);
-               this.$refs.stopBtn.disabled = false;
-               console.log(timeRecStarted); // debug
-            };
-            this.mediaRecorder.onresume = () => {
-              const timeRecResumed = new Date();
-              this.recTimeIntervals.push(timeRecResumed);
-              console.log(timeRecResumed); // debug
-              this.mediaRecorder.requestData();
-            };
-            this.mediaRecorder.ondataavailable = (e) => {
-              this.chunks.push(e.data);
-            };
-            this.mediaRecorder.onpause = () => {
-              const timeRecPaused = new Date();
-              this.recTimeIntervals.push(timeRecPaused);
-              console.log(timeRecPaused); // debug
-            };
-            this.mediaRecorder.onstop = () => {
-              //this.recStarted = false;
-              this.timeRecStopped = new Date();
-              this.recTimeIntervals.push(this.timeRecStopped);
-              console.log(this.timeRecStopped); // debug
-              this.$refs.stopBtn.disabled = true;
-              this.$refs.saveBtn.disabled = false;
-              const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
-              const audioURL = window.URL.createObjectURL(blob);
-              this.$refs.audio.src = audioURL;
-            };
+            this.handleRecStartEvent();
+            this.handleRecStopEvent();
+            this.handleRecResumeEvent();
+            this.handleRecPauseEvent();
+            this.handleRecDataAvailableEvent();
           })
           // Error callback
           .catch(function (err) {

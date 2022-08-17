@@ -19,7 +19,7 @@ export default {
   data() {
     return {
       waiting_for_press2: false,
-      timestamp: 0
+      currDate: 0
     }
   },
   methods: {
@@ -27,18 +27,18 @@ export default {
      * Save a new note to our dataset
      */
     addnote() {
-      console.log('pressed');
+      //console.log('pressed');
       const textarea = this.$refs.textarea;
       // remove last line break
       const note = textarea.innerText.slice(0, -1);
-      console.log(note);
+      //console.log(note);
       textarea.innerHTML = '';
-      this.$emit('add-note', this.timestamp, note);
-      console.log(this.timestamp);
+      this.$emit('add-note', this.currDate, note);
+      //console.log(this.currDate);
       this.waiting_for_press2 = false;
     },
     /* 
-     * Handle 'Enter+Enter' shortcut to submit note.
+     * Handle double press 'Return' shortcut to submit note.
      * Return false to prevent the event propagation. 
      */
     dblenter(e) {
@@ -71,9 +71,9 @@ export default {
     },
     handleNewTimestampOnTextInsert() {
       if (this.$refs.textarea.textContent.slice(0, -1).length === 0) {
-        const currTime = new Date();
+         this.currDate = new Date();
         // console.log(currTime); // debug
-        this.timestamp = currTime;
+       
       }
     }
   }
