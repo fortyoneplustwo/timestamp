@@ -80,13 +80,14 @@ export default {
           }
         }
       }
-      return timestamp;
+      return Math.floor(timestamp/1000);
     },
     addnote(dateNoteTaken, content) {
       // this.notes.push({id: this.notes.length+1, text: content})
       // console.log(dateNoteTaken - this.recTimeIntervals[0]);
       const timestamp = this.computeTimestamp(dateNoteTaken);
-      this.notes.push({ id: timestamp, text: content });
+      const id = this.notes.length;
+      this.notes.push({ id: id, timestamp: timestamp, text: content });
       for(var i = 0; i < this.recTimeIntervals.length; i++) { console.log('intervals: %s', this.recTimeIntervals[i]); }
       console.log('---------');
       console.log('date note taken: %s', dateNoteTaken);
