@@ -27,14 +27,10 @@ export default {
      * Save a new note to our dataset
      */
     addnote() {
-      //console.log('pressed');
       const textarea = this.$refs.textarea;
-      // remove last line break
       const note = textarea.innerText.slice(0, -1);
-      //console.log(note);
       textarea.innerHTML = '';
       this.$emit('add-note', this.currDate, note);
-      //console.log(this.currDate);
       this.waiting_for_press2 = false;
     },
     /* 
@@ -54,7 +50,8 @@ export default {
         this.waiting_for_press2 = false;
       }
     },
-    /* Switch between Write and Edit mode.
+    /* 
+     * Switch between Write and Edit mode.
      * TODO: Make this a toggle swtich.
      */
     toggleEditMode() {
@@ -71,9 +68,7 @@ export default {
     },
     handleNewTimestampOnTextInsert() {
       if (this.$refs.textarea.textContent.slice(0, -1).length === 0) {
-         this.currDate = new Date();
-        // console.log(currTime); // debug
-       
+        this.currDate = new Date();
       }
     }
   }

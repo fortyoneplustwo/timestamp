@@ -5,7 +5,7 @@
           <div class='recorder-container'>
             <button ref="recBtn" @click='handleRecButton'>⏺</button>
             <button ref="stopBtn" disabled="true" @click="handleStopButton">⏹</button>
-            <audio controls ref="audio"></audio>
+            <audio hidden controls ref="audio"></audio>
             <button ref="saveBtn" disabled="true" @click="handleSaveButton">⬇️</button>
           </div>
     </div>
@@ -83,8 +83,6 @@ export default {
       return Math.floor(timestamp/1000);
     },
     addnote(dateNoteTaken, content) {
-      // this.notes.push({id: this.notes.length+1, text: content})
-      // console.log(dateNoteTaken - this.recTimeIntervals[0]);
       const timestamp = this.computeTimestamp(dateNoteTaken);
       const id = this.notes.length;
       this.notes.push({ id: id, timestamp: timestamp, text: content });
@@ -102,12 +100,9 @@ export default {
           this.mediaRecorder.resume();
         }
         btn.textContent = '⏸';
-        // console.log(this.mediaRecorder.state); // debug
       } else {
-        // assert(this.startTime >= 0); // debug
         this.mediaRecorder.pause();
         btn.textContent = '⏺';
-        // console.log(this.mediaRecorder.state);  // debug
       }
     },
     handleStopButton() {
@@ -122,6 +117,7 @@ export default {
       this.mediaRecorder.stop();
       this.$refs.recBtn.textContent = '⏺';
       this.$refs.recBtn.disabled = true;
+      this.$refs.audio.hidden = false;
     },
     handleRecStartEvent() {
       this.mediaRecorder.onstart = () => {
@@ -245,7 +241,7 @@ export default {
 }
 
 .editor {
-   display: flex;
+  display: flex;
   background-color: lightsalmon;
   padding: 1%;
   margin-top: 5%;
