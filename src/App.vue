@@ -11,7 +11,7 @@
     </div>
     <div class='canvas'>
       <div class='page'>
-        <MyPage :notes="notes" :mode="mode" />
+        <MyPage @seek-to-timestamp="seekToTimestamp" :notes="notes" :mode="mode" />
       </div>
     </div> 
     <div class="editor">
@@ -73,9 +73,9 @@ export default {
           timestamp = 0;
         } else {
           // Can assume recTimeIntervals.length is even and the last log is a pause log
-          for(var i = 0; i < this.recTimeIntervals.length - 1; i+=2) {
-            const timeRecPaused = this.recTimeIntervals[i+1];
-            const timeRecResumed = this.recTimeIntervals[i];
+          for(var j = 0; j < this.recTimeIntervals.length - 1; j+=2) {
+            const timeRecPaused = this.recTimeIntervals[j+1];
+            const timeRecResumed = this.recTimeIntervals[j];
             timestamp += timeRecPaused - timeRecResumed;
           }
         }
@@ -180,6 +180,10 @@ export default {
       } else {
         console.log("getUserMedia not supported on your browser!");
       }
+    },
+    seekToTimestamp(t) {
+      this.$refs.audio.currentTime = t;
+      this.$refs.audio.play();
     }
   }
 }
