@@ -15,7 +15,7 @@
       </div>
     </div> 
     <div class="editor">
-        <MyEditor :mode="mode" @add-note="addnote"/>
+        <MyEditor :mode="mode" @add-note="addNote" @toggle-mode="toggleMode"/>
     </div>
   </div>
 </template>
@@ -36,65 +36,60 @@ export default {
       mode: Boolean,
       mediaRecorder: Object,
       chunks: [],
-      recTimeIntervals: [],
-      recStarted: Boolean,
-      recStopped: Boolean
+      recDuration: Number,
+      dateWhenRecLastActive: Number,
+      dateWhenRecLastInactive: Number
     }
   },
   created() {
-    // this.notes= [
-    //   {id: "1", text: "a"},
-    //   {id: "2",text: "b"}, {id: "3",text: "c"},{id: "4",text: "d"},{id: "5",text: "e"}
-    // ];
     this.mode = false;
     this.initRecorder();
-    this.recStarted = false;
+    /*
+     * Because the MediaRecorder API doesn't provide a currentTime attribute,
+     * we implement our own algorithm to calculate a note's timestamp.
+     * This requires that we keep updating the following variables:
+     */
+    this.dateWhenRecLastActive = 0;
+    this.dateWhenRecLastInactive = 0;
+    this.recDuration = 0;
   },
   methods: {
-    /*
-     * Given actual date  on which note was taken,
-     * compute the timestamp relative to the date when the recording first started.
-     */
-    computeTimestamp(dateNoteTaken) {
-      // TODO replace this algorithm with one that uses an accumulator
-      // so as toavois O(n) cost each time a note is added.
-      // But keep recTimeIntervals log just in case we need it later.
-      var timestamp = 0;
-      if(this.mediaRecorder.state === 'recording') {
-        // Can assume recTimeIntervals. length is odd and the last log is a record log
-        for(var i = 0; i < this.recTimeIntervals.length - 2; i+=2) {
-          const timeRecPaused = this.recTimeIntervals[i+1];
-          const timeRecResumed = this.recTimeIntervals[i];
-          timestamp += timeRecPaused - timeRecResumed;
-        }
-        timestamp += dateNoteTaken - this.recTimeIntervals[this.recTimeIntervals.length - 1];
-      } else {
-        if(this.recTimeIntervals.length === 0) {
-          timestamp = 0;
-        } else {
-          // Can assume recTimeIntervals.length is even and the last log is a pause log
-          for(var j = 0; j < this.recTimeIntervals.length - 1; j+=2) {
-            const timeRecPaused = this.recTimeIntervals[j+1];
-            const timeRecResumed = this.recTimeIntervals[j];
-            timestamp += timeRecPaused - timeRecResumed;
-          }
-        }
-      }
-      return Math.floor(timestamp/1000);
-    },
-    addnote(dateNoteTaken, content) {
-      const timestamp = this.computeTimestamp(dateNoteTaken);
+    addNote(dateNoteTaken, content) {
       const id = this.notes.length;
-      this.notes.push({ id: id, timestamp: timestamp, text: content });
-      for(var i = 0; i < this.recTimeIntervals.length; i++) { console.log('intervals: %s', this.recTimeIntervals[i]); }
-      console.log('---------');
-      console.log('date note taken: %s', dateNoteTaken);
+      // Given dateNoteTaken, compute a note's timestamp.
+      let timestamp = 0;
+      if(this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
+        timestamp = this.recDuration + (dateNoteTaken - this.dateWhenRecLastActive);
+      } else {
+        timestamp = this.recDuration;
+      }
+      // Milliseconds -> Seconds
+      timestamp = Math.floor(timestamp / 1000);
+      this.notes.push(
+        { 
+          id: id, 
+          timestamp: timestamp, 
+          text: content
+        }
+      );
+    },
+    seekToTimestamp(t) {
+      this.$refs.audio.currentTime = t;
+      this.$refs.audio.play();
+    },
+    toggleMode() {
+      this.mode = !this.mode;
+    },
+    /*
+     * Called whenever the recording has paused/stopped.
+     */
+    adjustRecDuration() {
+      this.recDuration += this.dateWhenRecLastInactive - this.dateWhenRecLastActive;
     },
     handleRecButton(e) {
       const btn = e.target;
       if (this.mediaRecorder.state != 'recording') {
-        if (!this.recStarted) {
-          this.recStarted = true;
+        if (this.dateWhenRecLastActive === 0) {
           this.mediaRecorder.start();
         } else {
           this.mediaRecorder.resume();
@@ -106,55 +101,10 @@ export default {
       }
     },
     handleStopButton() {
-      // If somehow the recording has stopped without being paused
-      //  for e.g. disconnected microphone
-      //  then append current date to our recTimeIntervals array.
-      // This ensures the length of our array is always even when not recording.
-      if(this.recTimeIntervals.length / 2 != 0) {
-        const timeRecStopped = new Date();
-        this.recTimeIntervals.push(timeRecStopped);
-      }
       this.mediaRecorder.stop();
       this.$refs.recBtn.textContent = '⏺';
       this.$refs.recBtn.disabled = true;
       this.$refs.audio.hidden = false;
-    },
-    handleRecStartEvent() {
-      this.mediaRecorder.onstart = () => {
-        const timeRecStarted = new Date();
-        this.recTimeIntervals.push(timeRecStarted);
-        this.$refs.stopBtn.disabled = false;
-      };
-    },
-    handleRecResumeEvent() {
-      this.mediaRecorder.onresume = () => {
-        const timeRecResumed = new Date();
-        this.recTimeIntervals.push(timeRecResumed);
-        this.mediaRecorder.requestData();
-      };
-    },
-    handleRecDataAvailableEvent() {
-      this.mediaRecorder.ondataavailable = (e) => {
-        this.chunks.push(e.data);
-      };
-    },
-    handleRecPauseEvent() {
-      this.mediaRecorder.onpause = () => {
-        const timeRecPaused = new Date();
-        this.recTimeIntervals.push(timeRecPaused);
-      };
-    },
-    handleRecStopEvent() {
-      this.mediaRecorder.onstop = () => {
-        //this.recStarted = false;
-        this.timeRecStopped = new Date();
-        this.recTimeIntervals.push(this.timeRecStopped);
-        this.$refs.stopBtn.disabled = true;
-        this.$refs.saveBtn.disabled = false;
-        const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
-        const audioURL = window.URL.createObjectURL(blob);
-        this.$refs.audio.src = audioURL;
-      };
     },
     initRecorder() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -163,11 +113,38 @@ export default {
           // Success callback
           .then((stream) => {
             this.mediaRecorder = new MediaRecorder(stream);
-            this.handleRecStartEvent();
-            this.handleRecStopEvent();
-            this.handleRecResumeEvent();
-            this.handleRecPauseEvent();
-            this.handleRecDataAvailableEvent();
+            // handle onstart event
+            this.mediaRecorder.onstart = () => {
+              this.dateWhenRecLastActive = new Date();
+              this.$refs.stopBtn.disabled = false;
+            };
+            // handle ondataavailable event
+            this.mediaRecorder.ondataavailable = (e) => {
+              this.chunks.push(e.data);
+            };
+            // handle onresume event
+            this.mediaRecorder.onresume = () => {
+              this.dateWhenRecLastActive = new Date();
+              this.mediaRecorder.requestData();
+            };
+            // handle onpause event
+            this.mediaRecorder.onpause = () => {
+              this.dateWhenRecLastInactive = new Date();
+              this.adjustRecDuration();
+            };
+            // handle onstop event
+            this.mediaRecorder.onstop = () => {
+              // Recording may have stopped without being paused.
+              if (this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
+                this.dateWhenRecLastInactive = new Date();
+                this.adjustRecDuration();
+              }
+              this.$refs.stopBtn.disabled = true;
+              this.$refs.saveBtn.disabled = false;
+              const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
+              const audioURL = window.URL.createObjectURL(blob);
+              this.$refs.audio.src = audioURL;
+            };
           })
           // Error callback
           .catch(function (err) {
@@ -176,10 +153,6 @@ export default {
       } else {
         console.log("getUserMedia not supported on your browser!");
       }
-    },
-    seekToTimestamp(t) {
-      this.$refs.audio.currentTime = t;
-      this.$refs.audio.play();
     }
   }
 }

@@ -67,6 +67,7 @@ export default {
       }
     },
     handleNewTimestampOnTextInsert() {
+      // Get rid of new line at the end
       if (this.$refs.textarea.textContent.slice(0, -1).length === 0) {
         this.currDate = new Date();
       }
