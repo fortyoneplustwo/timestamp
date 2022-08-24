@@ -5,7 +5,8 @@
     </button>
     <hr class="separator">
     <span ref="textarea" class="textarea" contenteditable="false" @blur="handleLoseFocus"> {{ text }} </span>
-    <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button>
+    <!-- <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
+    <input ref="checkbox" type="checkbox" v-if="mode"/>
   </div>
 </template>
 
@@ -49,6 +50,7 @@ export default {
 <style scoped>
 .note-container {
   display: flex;
+  flex-direction: row;
   height:  auto;
   width: 100%;
   padding: 1% 2% 1% 2%;
@@ -66,7 +68,7 @@ export default {
 }
 
 .timestamp {
-  width: 70px;
+  min-width: 100px;
   text-align: center;
   display: inline-block;
   cursor: pointer;
@@ -85,9 +87,11 @@ export default {
 }
 
 .checkbox {
+  display: flex;
   cursor: pointer;
   border: none;
   margin-left: auto;
+  /* margin-right: 0; */
 }
 
 .separator{
@@ -102,6 +106,7 @@ export default {
 .textarea {
   margin-right: 1%;
   font-family:Georgia, 'Times New Roman', Times, serif;
+  width: 100%;
 }
 
 .highlight {

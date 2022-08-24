@@ -10,7 +10,7 @@
           </div>
     </div>
     <div class='canvas'>
-      <div class='page'>
+      <div v-if="notes.length > 0" class='page'>
         <MyPage @seek-to-timestamp="seekToTimestamp" :notes="notes" :mode="mode" />
       </div>
     </div> 
@@ -32,31 +32,44 @@ export default {
   },
   data() {
     return {
+      /*
+       * A list of note objects {id, timestamp, text}.
+       */
       notes: [],
+      noteIdCounter: Number,
       mode: Boolean,
       mediaRecorder: Object,
+      /*
+       * Where audio is stored while recording.
+       */
       chunks: [],
+      /*
+       * Because the MediaRecorder API doesn't provide a currentTime attribute,
+       * we implement our own algorithm to calculate a note's timestamp.
+       * Keep track of the recorded audio duration by updating the following variables
+       * on start/pause/resume/stop:
+       */
       recDuration: Number,
       dateWhenRecLastActive: Number,
       dateWhenRecLastInactive: Number
     }
   },
   created() {
+    // this.notes = [{id: 0, timestamp: 8888, content: 'test'}];
     this.mode = false;
     this.initRecorder();
-    /*
-     * Because the MediaRecorder API doesn't provide a currentTime attribute,
-     * we implement our own algorithm to calculate a note's timestamp.
-     * This requires that we keep updating the following variables:
-     */
     this.dateWhenRecLastActive = 0;
     this.dateWhenRecLastInactive = 0;
     this.recDuration = 0;
+    this.noteIdCounter = 0;
   },
   methods: {
+    /*
+     * Given dateNoteTaken, compute a note's timestamp and append to notes[].
+     */
     addNote(dateNoteTaken, content) {
-      const id = this.notes.length;
-      // Given dateNoteTaken, compute a note's timestamp.
+      const id = this.noteIdCounter++;
+      console.log(dateNoteTaken);
       let timestamp = 0;
       if(this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
         timestamp = this.recDuration + (dateNoteTaken - this.dateWhenRecLastActive);
@@ -159,8 +172,7 @@ export default {
 </script>
 
 <style>
-.app{
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+.app, app * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -201,7 +213,8 @@ export default {
   border-color: lightcoral;
   border-radius: 10px;
   padding: 0.5%;
-  min-height: 20%;
+  /* min-height: 20%; */
+  height: fit-content;
   background-color: #f2eecb;
 }
 
@@ -219,9 +232,11 @@ export default {
   padding: 1%;
   margin-top: 5%;
   min-height: 10%;
+  max-height: 20%;
   border-style: ridge;
   border-color: coral;
   border-radius: 10px;
+  margin-bottom: auto;
 }
 
 .recorder-container {

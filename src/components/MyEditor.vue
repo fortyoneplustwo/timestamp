@@ -2,11 +2,11 @@
   <div class="editorContainer">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <button ref="editBtn" @click="toggleEditMode" value="write" class='mode-button'>Edit</button>
-    <p contenteditable="true" @input="handleNewTimestampOnTextInsert" ref="textarea" class="textarea" :onkeydown="dblenter" v-if="!mode"></p>
+    <p contenteditable="true" @input="handleNewTimestampOnTextInsert" ref="textarea" class="textarea" :onkeydown="dblEnter" v-if="!mode"></p>
     <button v-if="mode" class="edit-options" ><i class="fa fa-copy"></i></button>
     <button v-if="mode" class="edit-options" ><i class="fa fa-trash"></i></button>
     <button v-if="mode" class="edit-options" ><i class="fa fa-undo"></i></button>
-    <button @click='addnote' class='return'><span>&#8617;</span> </button>
+    <button @click='addNote' class='return'><span>&#8617;</span> </button>
   </div>
 </template>
 
@@ -19,29 +19,31 @@ export default {
   data() {
     return {
       waiting_for_press2: false,
-      currDate: 0
+      dateNoteTaken: 0,
+      isEmpty: true
     }
   },
   methods: {
     /* 
      * Save a new note to our dataset
      */
-    addnote() {
+    addNote() {
       const textarea = this.$refs.textarea;
       const note = textarea.innerText.slice(0, -1);
       textarea.innerHTML = '';
-      this.$emit('add-note', this.currDate, note);
+      this.$emit('add-note', this.dateNoteTaken, note);
       this.waiting_for_press2 = false;
+      this.isEmpty = true;
     },
     /* 
      * Handle double press 'Return' shortcut to submit note.
      * Return false to prevent the event propagation. 
      */
-    dblenter(e) {
+    dblEnter(e) {
       const key_code = e.keyCode;
       if(key_code === 13) { 
         if(this.waiting_for_press2) {
-            this.addnote();
+            this.addNote();
             return false;
         } else {
           this.waiting_for_press2 = true;
@@ -66,10 +68,15 @@ export default {
         this.$emit('toggle-mode', false);
       }
     },
+    /*
+     * Mark the date whenever input is detected on a previously empty editor.
+     */
     handleNewTimestampOnTextInsert() {
-      // Get rid of new line at the end
-      if (this.$refs.textarea.textContent.slice(0, -1).length === 0) {
-        this.currDate = new Date();
+      const currDate = new Date();
+      if(this.$refs.textarea.textContent.length === 0) this.isEmpty = true;
+      if(this.isEmpty && this.$refs.textarea.textContent.length > 0) {
+        this.dateNoteTaken = currDate;
+        this.isEmpty = false;
       }
     }
   }
