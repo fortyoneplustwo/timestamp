@@ -68,11 +68,14 @@ export default {
 }
 
 .timestamp {
-  min-width: 100px;
+  /*min-width: 100px;*/
+  width: 80px;
   text-align: center;
   display: inline-block;
   cursor: pointer;
-  padding: 5px 16px;
+  /*padding: 5px 16px;*/
+  padding-left: 0;
+  padding-right: 0;
   font-size: 14px;
   font-weight: 500;
   vertical-align: middle;
@@ -84,6 +87,7 @@ export default {
   border: none;
   color: darkred;
   margin-right: 2%;
+  font-family: monospace;
 }
 
 .checkbox {
@@ -105,8 +109,8 @@ export default {
 
 .textarea {
   margin-right: 1%;
-  font-family:Georgia, 'Times New Roman', Times, serif;
   width: 100%;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .highlight {

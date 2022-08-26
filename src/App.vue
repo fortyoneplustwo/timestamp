@@ -1,24 +1,45 @@
 <template>
   <div class='container'>
     <div class='header'>
-          <h1 class='title'>Time:stamp</h1>
+          <h1 style="font-family: cursive;" class='title'>Timestamp</h1>
           <div class='recorder-container'>
-            <button ref="recBtn" @click='handleRecButton'>⏺</button>
-            <button ref="stopBtn" disabled="true" @click="handleStopButton">⏹</button>
+            <button class="rec-controls" 
+                    ref="recBtn" 
+                    @click='handleRecButton'>
+                    🔴
+            </button>
+            <button class="rec-controls" 
+                    ref="stopBtn" 
+                    disabled="true" 
+                    @click="handleStopButton">
+                    ⏹
+            </button>
             <audio hidden controls ref="audio"></audio>
-            <button ref="saveBtn" disabled="true" @click="handleSaveButton">⬇️</button>
+            <button class="rec-controls" 
+                    ref="saveBtn" 
+                    disabled="true" 
+                    @click="handleSaveButton">
+                    💾
+            </button>
           </div>
     </div>
     <div class='canvas'>
       <div v-if="notes.length > 0" class='page'>
-        <MyPage @seek-to-timestamp="seekToTimestamp" :notes="notes" :mode="mode" />
+        <MyPage @seek-to-timestamp="seekTo" :notes="notes" :mode="mode" />
       </div>
     </div> 
     <div class="editor">
-        <MyEditor :mode="mode" @add-note="addNote" @toggle-mode="toggleMode"/>
+        <MyEditor class="editor2" 
+                  :mode="mode" 
+                  :recDuration="recDuration" 
+                  :dateWhenRecLastActive="dateWhenRecLastActive"
+                  :dateWhenRecLastInactive="dateWhenRecLastInactive" 
+                  @add-note="addNote" 
+                  @toggle-mode="toggleMode"/>
     </div>
   </div>
 </template>
+
 
 <script>
 import MyPage from './components/MyPage.vue'
@@ -33,7 +54,7 @@ export default {
   data() {
     return {
       /*
-       * A list of note objects {id, timestamp, text}.
+       * Our datalist of note objects: {id, timestamp, text}.
        */
       notes: [],
       noteIdCounter: Number,
@@ -45,39 +66,29 @@ export default {
       chunks: [],
       /*
        * Because the MediaRecorder API doesn't provide a currentTime attribute,
-       * we implement our own algorithm to calculate a note's timestamp.
-       * Keep track of the recorded audio duration by updating the following variables
-       * on start/pause/resume/stop:
+       * we need to keep track of the recording's duration 
+       * by updating the following 3 variables on start/pause/resume/stop.
        */
       recDuration: Number,
-      dateWhenRecLastActive: Number,
-      dateWhenRecLastInactive: Number
+      dateWhenRecLastActive: Date,
+      dateWhenRecLastInactive: Date
     }
   },
   created() {
-    // this.notes = [{id: 0, timestamp: 8888, content: 'test'}];
+    // this.notes = [{id: 1, timestamp: 533339, content: 'test'}];
     this.mode = false;
     this.initRecorder();
-    this.dateWhenRecLastActive = 0;
-    this.dateWhenRecLastInactive = 0;
+    this.dateWhenRecLastActive = this.dateWhenRecLastInactive = new Date();
     this.recDuration = 0;
     this.noteIdCounter = 0;
   },
   methods: {
     /*
-     * Given dateNoteTaken, compute a note's timestamp and append to notes[].
+     * Add a note to our datalist: notes[].
+     * Emitted by MyEditor component.
      */
-    addNote(dateNoteTaken, content) {
+    addNote(timestamp, content) {
       const id = this.noteIdCounter++;
-      console.log(dateNoteTaken);
-      let timestamp = 0;
-      if(this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
-        timestamp = this.recDuration + (dateNoteTaken - this.dateWhenRecLastActive);
-      } else {
-        timestamp = this.recDuration;
-      }
-      // Milliseconds -> Seconds
-      timestamp = Math.floor(timestamp / 1000);
       this.notes.push(
         { 
           id: id, 
@@ -86,23 +97,31 @@ export default {
         }
       );
     },
-    seekToTimestamp(t) {
-      this.$refs.audio.currentTime = t;
-      this.$refs.audio.play();
+    seekTo(timestamp) {
+      const audio = this.$refs.audio;
+      // Quick play-pause required otherwise the audio won't seek to timestamp.
+      audio.play(); audio.pause(); 
+      audio.currentTime = timestamp;
+      audio.play();
     },
     toggleMode() {
       this.mode = !this.mode;
     },
     /*
-     * Called whenever the recording has paused/stopped.
+     * Called whenever the recording is inactive i.e. on pause/stop.
      */
     adjustRecDuration() {
-      this.recDuration += this.dateWhenRecLastInactive - this.dateWhenRecLastActive;
+      this.recDuration += this.dateWhenRecLastInactive 
+                        - this.dateWhenRecLastActive;
     },
+    /*
+     * Record button can toggle between (start)resume/pause.
+     * Stop is handled by a separate button.
+     */
     handleRecButton(e) {
       const btn = e.target;
       if (this.mediaRecorder.state != 'recording') {
-        if (this.dateWhenRecLastActive === 0) {
+        if (this.dateWhenRecLastActive === this.dateWhenRecLastInactive) {
           this.mediaRecorder.start();
         } else {
           this.mediaRecorder.resume();
@@ -110,12 +129,12 @@ export default {
         btn.textContent = '⏸';
       } else {
         this.mediaRecorder.pause();
-        btn.textContent = '⏺';
+        btn.textContent = '🔴';
       }
     },
     handleStopButton() {
       this.mediaRecorder.stop();
-      this.$refs.recBtn.textContent = '⏺';
+      this.$refs.recBtn.textContent = '🔴';
       this.$refs.recBtn.disabled = true;
       this.$refs.audio.hidden = false;
     },
@@ -123,7 +142,7 @@ export default {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices
           .getUserMedia({ audio: true, })
-          // Success callback
+          // Success callback: Register recorder event listeners
           .then((stream) => {
             this.mediaRecorder = new MediaRecorder(stream);
             // handle onstart event
@@ -152,11 +171,13 @@ export default {
                 this.dateWhenRecLastInactive = new Date();
                 this.adjustRecDuration();
               }
+              this.$refs.recBtn.disabled = true;
               this.$refs.stopBtn.disabled = true;
               this.$refs.saveBtn.disabled = false;
-              const blob = new Blob(this.chunks, { type: "audio/ogg; codecs=opus" });
+              const blob = new Blob(this.chunks, {type: "audio/ogg; codecs=opus"});
               const audioURL = window.URL.createObjectURL(blob);
               this.$refs.audio.src = audioURL;
+              this.$refs.audio.currentTime = 0;
             };
           })
           // Error callback
@@ -171,8 +192,9 @@ export default {
 }
 </script>
 
+
 <style>
-.app, app * {
+.app {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -185,6 +207,8 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  background-image: url("../public/upfeathers.png");
+  background-repeat: repeat;
 }
 
 .controls {
@@ -209,41 +233,58 @@ export default {
   margin-left: 15%;
   margin-right: 15%;
   overflow: scroll;
-  border-style: ridge;
-  border-color: lightcoral;
-  border-radius: 10px;
+  border-style: solid;
+  border-color: #f2eecb;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: none;
   padding: 0.5%;
-  /* min-height: 20%; */
   height: fit-content;
   background-color: #f2eecb;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.354);
 }
 
 .canvas {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   flex:  2;
   min-height: 40%;
+  padding-top: 2%;
+
 }
 
 .editor {
   display: flex;
-  background-color: lightsalmon;
+  justify-content: center;
+  align-items: center;
+  background-color: #945100;
   padding: 1%;
-  margin-top: 5%;
-  min-height: 10%;
-  max-height: 20%;
+  margin-top: auto;
+  height: 5%;
   border-style: ridge;
-  border-color: coral;
+  border-color: #945100;
   border-radius: 10px;
-  margin-bottom: auto;
+  border-width: thick;
+  height: fit-content;
 }
 
 .recorder-container {
-  margin-bottom: 5%;
+  margin-bottom: 1%;
   display: flex;
   flex-direction: row;
   justify-content: center;
   gap: 1%;
 }
+
+.editor2 {
+  max-width: 80%;
+}
+
+.rec-controls{
+  background-color: transparent;
+  border-style: none;
+  font-size: 150%;
+}
+
 </style>

@@ -1,12 +1,18 @@
 <template>
   <div class="editorContainer">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <button ref="editBtn" @click="toggleEditMode" value="write" class='mode-button'>Edit</button>
-    <p contenteditable="true" @input="handleNewTimestampOnTextInsert" ref="textarea" class="textarea" :onkeydown="dblEnter" v-if="!mode"></p>
-    <button v-if="mode" class="edit-options" ><i class="fa fa-copy"></i></button>
-    <button v-if="mode" class="edit-options" ><i class="fa fa-trash"></i></button>
-    <button v-if="mode" class="edit-options" ><i class="fa fa-undo"></i></button>
-    <button @click='addNote' class='return'><span>&#8617;</span> </button>
+    <button ref="editBtn" 
+            value="write" 
+            class='mode-button'>
+            <i v-if="writeMode === 'list'" class="fa fa-list"></i>
+    </button>
+    <input type="text"
+            placeholder="Hit <return> for a new line" 
+            @input="handleLogDateOnTextInput" 
+            ref="textarea" class="textarea" 
+            :onkeydown="handleKeyboardShortcuts" 
+            v-if="!mode">
+    <!-- Note: textarea used to be a contenteditable <p> tag -->
+    <button @click='addNote' class='return'><span>⮐</span> </button>
   </div>
 </template>
 
@@ -14,69 +20,79 @@
 export default {
   name: 'MyEditor',
   props: {
-    mode: Boolean
+    mode: Boolean,
+    /*
+     * We need the following 3 variables to compute a note's timestamp.
+     */
+    recDuration: Number,
+    dateWhenRecLastActive: Date,
+    dateWhenRecLastInactive: Date,
   },
   data() {
     return {
-      waiting_for_press2: false,
-      dateNoteTaken: 0,
-      isEmpty: true
+      /*
+       * dateOfInput for the most recent non-empty input.
+       */
+      dateOfInput: 0,
+      wasEmptyBeforeInput: true,
+      writeMode: 'none'
     }
   },
   methods: {
+    /*
+     * Given dateOfInput, compute the timestamp.
+     * Must convert milliseconds -> seconds.
+     */
+    computeTimestamp(dateOfInput) {
+      let timestamp = 0;
+      if(this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
+        timestamp = this.recDuration 
+                  + (dateOfInput - this.dateWhenRecLastActive);
+      } else {
+        timestamp = this.recDuration;
+      }
+      timestamp = Math.floor(timestamp / 1000);
+      return timestamp;
+    },
     /* 
-     * Save a new note to our dataset
+     * Emit note together with its timestamp.
+     * Empty note's timestamp = audio duration at time of save.
      */
     addNote() {
       const textarea = this.$refs.textarea;
-      const note = textarea.innerText.slice(0, -1);
-      textarea.innerHTML = '';
-      this.$emit('add-note', this.dateNoteTaken, note);
-      this.waiting_for_press2 = false;
-      this.isEmpty = true;
-    },
-    /* 
-     * Handle double press 'Return' shortcut to submit note.
-     * Return false to prevent the event propagation. 
-     */
-    dblEnter(e) {
-      const key_code = e.keyCode;
-      if(key_code === 13) { 
-        if(this.waiting_for_press2) {
-            this.addNote();
-            return false;
-        } else {
-          this.waiting_for_press2 = true;
-        }
+      const content = textarea.value;
+      textarea.value = '';
+      let timestamp = 0;
+      if(content.length === 0) {
+        timestamp = this.computeTimestamp(new Date());
       } else {
-        this.waiting_for_press2 = false;
+        timestamp = this.computeTimestamp(this.dateOfInput);
       }
+      this.$emit('add-note', timestamp, content);
+      // this.waiting_for_press2 = false;
+      this.wasEmptyBeforeInput = true;
     },
-    /* 
-     * Switch between Write and Edit mode.
-     * TODO: Make this a toggle swtich.
-     */
-    toggleEditMode() {
-      const button = this.$refs.editBtn;
-      if (button.value === 'write') {
-        button.innerHTML = 'Write';
-        button.value = 'edit';
-        this.$emit('toggle-mode', true);
-      } else {
-        button.value = 'write';
-        button.innerHTML = 'Edit';
-        this.$emit('toggle-mode', false);
+    handleKeyboardShortcuts(e) {
+      if(e.keyCode === 13) {
+        this.addNote();
+      } else if (e.key === 'l' && e.shiftKey && e.metaKey) {
+        this.writeMode = 'list';
+        this.$refs.editBtn.classList.add('list-mode');
+      } else if(e.key === 'Escape')  {
+        this.writeMode = 'none';
+        this.$refs.editBtn.classList.remove('list-mode');
       }
     },
     /*
-     * Mark the date whenever input is detected on a previously empty editor.
+     * Log the date whenever input is detected on a previously empty textarea.
      */
-    handleNewTimestampOnTextInsert() {
+    handleLogDateOnTextInput() {
       const currDate = new Date();
-      if(this.$refs.textarea.textContent.length === 0) this.isEmpty = true;
-      if(this.isEmpty && this.$refs.textarea.textContent.length > 0) {
-        this.dateNoteTaken = currDate;
-        this.isEmpty = false;
+      if(this.$refs.textarea.value.length === 0) { 
+        this.wasEmptyBeforeInput = true;
+      } else if(this.wasEmptyBeforeInput) {
+        this.dateOfInput = currDate;
+        this.wasEmptyBeforeInput = false;
       }
     }
   }
@@ -85,18 +101,19 @@ export default {
 
 <style scoped>
 .textarea {
-  height: fit-content;
-  overflow-y: scroll;
-  max-height: 60%;
+  /*height: 100%;*/
   width: 100%;
-  padding: 1%;
-  border-style: solid;
-  border-color: coral;
+  padding: 2%;
+  /*border-style: solid;*/
+  /*border-color: coral;*/
+  border-style: none;
   border-radius: 10px;
-  background-color: white;
+
   word-wrap: break-word;
-  font-family: 'Times New Roman', Times, serif;
-  white-space: pre-line;
+  /* font-family: 'Times New Roman', Times, serif; */
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  /*white-space: pre-line;*/
+  font-size: medium;
 }
 
 .mode-button {
@@ -125,9 +142,12 @@ export default {
 }
 
 .editorContainer {
-display: flex;
-flex-direction: row;
-justify-content: space-between;
-width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  align-items:  center;
+  height: fit-content;
 }
+
 </style>
