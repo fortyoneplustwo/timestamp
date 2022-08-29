@@ -23,9 +23,13 @@
             </button>
           </div>
     </div>
-    <div class='canvas'>
+    <div class='page-container'>
       <div v-if="notes.length > 0" class='page'>
-        <MyPage @seek-to-timestamp="seekTo" :notes="notes" :mode="mode" />
+        <ul class="list" style="list-style-type: none; margin: 0; padding: 0;">
+          <li class="saved-note" v-for="note in notes" :key="note.id">
+            <MyNote @seek-to-timestamp="seekTo" :note="note" v-bind:mode="mode"/>
+           </li>
+        </ul>
       </div>
     </div> 
     <div class="editor">
@@ -42,14 +46,14 @@
 
 
 <script>
-import MyPage from './components/MyPage.vue'
 import MyEditor from './components/MyEditor.vue'
+import MyNote from './components/MyNote.vue'
 
 export default {
   name: 'App',
   components: {
-    MyPage,
-    MyEditor
+    MyEditor,
+    MyNote
   },
   data() {
     return {
@@ -75,7 +79,7 @@ export default {
     }
   },
   created() {
-    // this.notes = [{id: 1, timestamp: 533339, content: 'test'}];
+    this.notes = [{id: 1, timestamp: 533339, text: 'test'}];
     this.mode = false;
     this.initRecorder();
     this.dateWhenRecLastActive = this.dateWhenRecLastInactive = new Date();
@@ -96,6 +100,9 @@ export default {
           text: content
         }
       );
+      for(let i=0; i < this.notes.length; i++) {
+        console.log(this.notes[i].text);
+      }
     },
     seekTo(timestamp) {
       const audio = this.$refs.audio;
@@ -244,7 +251,7 @@ export default {
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.354);
 }
 
-.canvas {
+.page-container {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;

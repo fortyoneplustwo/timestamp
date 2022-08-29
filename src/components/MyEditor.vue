@@ -81,6 +81,15 @@ export default {
       } else if(e.key === 'Escape')  {
         this.writeMode = 'none';
         this.$refs.editBtn.classList.remove('list-mode');
+      } else if(e.keyCode === 9) { // Tab
+        let input = e.target;
+        const text = input.value;
+        const pos = input.selectionStart;
+        input.value = text.slice(0, input.selectionStart)
+                    + '\t'
+                    + text.slice(input.selectionStart, text.length);
+        input.setSelectionRange(pos + 1, pos + 1);
+        return false;
       }
     },
     /*
@@ -110,10 +119,10 @@ export default {
   border-radius: 10px;
 
   word-wrap: break-word;
-  /* font-family: 'Times New Roman', Times, serif; */
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
   /*white-space: pre-line;*/
   font-size: medium;
+  overflow-x: auto;
 }
 
 .mode-button {

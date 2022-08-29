@@ -1,10 +1,16 @@
 <template>
   <div class='note-container' @dblclick="handleDoubleClick">
-    <button @click="$emit('seek-to-timestamp', this.timestamp)" class='timestamp'>
-      {{ timestampToString() }}
+    <button @click="$emit('seek-to-timestamp', this.timestamp)" 
+            class='timestamp'>
+            {{ timestampToString() }}
     </button>
     <hr class="separator">
-    <span ref="textarea" class="textarea" contenteditable="false" @blur="handleLoseFocus"> {{ text }} </span>
+    <span ref="textarea"
+          class="textarea"
+          @blur="handleLoseFocus"
+          v-model="text">
+          {{ text }} 
+    </span>
     <!-- <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
     <input ref="checkbox" type="checkbox" v-if="mode"/>
   </div>
@@ -26,6 +32,8 @@ export default {
       timestampSec: this.note.timestamp - Math.floor(this.note.timestamp / 60) * 60
     }
   },
+  computed: {
+  },
   methods: {
     timestampToString() {
       let secString = this.timestampSec.toString();
@@ -38,6 +46,7 @@ export default {
     },
     handleLoseFocus() {
       this.$refs.textarea.contentEditable = false;
+      console.log('changed to: %s', this.text);
       // emit note-edited(this.$refs.textarea.textContent, note.id);
     },
     copy() {
