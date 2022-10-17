@@ -7,6 +7,7 @@
 - Double click a note on the page to edit.
   
 ## Design
+  - Implemented using the Options API.
   - Typewriter-like UI deemed suitable for live note-taking. Allows for separation of logic between the page of notes and the editor.
   - The page is implemented as a list rendering of note components.
   - A red left margin (implemented in CSS) visually separates the timestamp from the text inside a note component. The margin makes the page look like a real notebook page.
