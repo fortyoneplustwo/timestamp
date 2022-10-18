@@ -10,13 +10,13 @@
   - Implemented using the Options API.
   - Typewriter-like UI deemed suitable for live note-taking. Allows for separation of logic between the page of notes and the editor.
   - The page is implemented as a list rendering of note components.
-  - A red left margin (implemented in CSS) visually separates the timestamp from the text inside a note component. The margin makes the page look like a real notebook page.
+  - A left margin separates the timestamps from the text and makes the page look like a notebook page.
   - No use of third party libraries - only vanilla CSS.
   
 ## Audio recording
-The application makes use of the MediaStream Recording API that comes with the browser to record audio. Since the API does not track the length of recorded audio, the following algorithm was implemented to compute a note's timestamp:
+The application makes use of the MediaStream Recording API that comes with the browser. Since the API does not track the length of recorded audio, the following algorithm was implemented to compute a note's timestamp:
   - Mark the date (including time) when the audio recorder was last active and when it was last inactive.
-  - Compute and adjust the recording duration whenever the recorder is inactive.
+  - Compute and adjust the audio duration based on the above information whenever the recorder is inactive.
   - Mark the date when the editor goes from being empty to being not empty.
   - If the note is saved, compute its timestamp using the above information.
   
