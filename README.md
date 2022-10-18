@@ -26,6 +26,7 @@ The application makes use of the MediaStream Recording API that comes with the b
   - If a note is saved, its timestamp can be computed using the above properties i.e. `dateWhenReclastActive`, `dateWhenRecLastInactive`, `audioDuration` and `dateNoteTaken`.
   
  **Complexity**: O(1).
+ 
   Let `n` represent the amount of times the recording has been started, paused, resumed and stopped.
   Adjusting the `audioDuration` property every time the recorder becomes inactive acts as an accumulator and ensures that computing a timestamp does not depend on `n`.
   
