@@ -1,6 +1,6 @@
 # timestamp
 ## Description
-A note-taking Vue app that allows you to synchronize the audio recording to your notes using timestamps.
+A note-taking Vue app that allows you to synchronize an audio recording to your notes using timestamps.
 
 ## Motivation
 To build a free, cross-platform web application that synchronizes recorded audio with typed notes. This tool is particulary useful when note taking during lectures, presentations and interviews.
