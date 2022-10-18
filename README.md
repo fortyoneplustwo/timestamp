@@ -2,13 +2,13 @@
 
 ## Features
 - Hitting \<Return\> for a new line clears the text in the editor and adds the new note to the page together with its timestamp.
-- Click on a timestamp to seek to that section of the recording.
+- Clicking on a timestamp will seek to that section of the recording.
 - Ability to pause the recording and resume at any time.
 - Double click a note on the page to edit.
   
 ## Design
   - Implemented using the Options API.
-  - Typewriter-like UI deemed suitable for live note-taking. Allows for separation of logic between the page of notes and the editor.
+  - Typewriter-like UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
   - No use of third party libraries - only vanilla CSS.
