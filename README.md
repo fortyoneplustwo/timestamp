@@ -7,7 +7,7 @@ To build a free, cross-platform web application that synchronizes recorded audio
 
 ## Features
 - Hitting \<Return\> for a new line clears the text in the editor and adds the new note to the page together with its timestamp.
-- Clicking on a timestamp will seek to that section of the recording.
+- Clicking on a timestamp `t` will seek to `time = t` of the recording.
 - Ability to pause the recording and resume at any time.
 - Double click a note on the page to edit.
   
