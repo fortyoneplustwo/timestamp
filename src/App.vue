@@ -1,7 +1,7 @@
 <template>
   <div class='container'>
     <div class='header'>
-          <h1 style="font-family: cursive;" class='title'>Timestamp</h1>
+          <h1 style="font-family: cursive; text-align: center;">Timestamp</h1>
           <div class='recorder-container'>
             <button class="rec-controls" 
                     ref="recBtn" 
@@ -27,13 +27,16 @@
       <div v-if="notes.length > 0" class='page'>
         <ul class="list" style="list-style-type: none; margin: 0; padding: 0;">
           <li class="saved-note" v-for="note in notes" :key="note.id">
-            <MyNote @seek-to-timestamp="seekTo" :note="note" v-bind:mode="mode"/>
+            <MyNote @seek-to-timestamp="seekTo" 
+                    :note="note"
+                    @note-edited="replaceNote" 
+                    v-bind:mode="mode"/>
            </li>
         </ul>
       </div>
     </div> 
-    <div class="editor">
-        <MyEditor class="editor2" 
+    <div class="editor-container">
+        <MyEditor class="editor" 
                   :mode="mode" 
                   :recDuration="recDuration" 
                   :dateWhenRecLastActive="dateWhenRecLastActive"
@@ -57,16 +60,13 @@ export default {
   },
   data() {
     return {
-      /*
-       * Our datalist of note objects: {id, timestamp, text}.
-       */
+       /* Our datalist of note objects: {id, timestamp, text}. */
       notes: [],
       noteIdCounter: Number,
+      /* Keep track of write/edit mode. May not need this feature after all. */
       mode: Boolean,
       mediaRecorder: Object,
-      /*
-       * Where audio is stored while recording.
-       */
+       /* Where audio is stored while recording. */
       chunks: [],
       /*
        * Because the MediaRecorder API doesn't provide a currentTime attribute,
@@ -79,7 +79,6 @@ export default {
     }
   },
   created() {
-    this.notes = [{id: 1, timestamp: 533339, text: 'test'}];
     this.mode = false;
     this.initRecorder();
     this.dateWhenRecLastActive = this.dateWhenRecLastInactive = new Date();
@@ -100,8 +99,12 @@ export default {
           text: content
         }
       );
+    },
+    replaceNote(id, newText) {
       for(let i=0; i < this.notes.length; i++) {
-        console.log(this.notes[i].text);
+        if(id === this.notes[i].id) {
+          this.notes[i].text = newText;
+        }
       }
     },
     seekTo(timestamp) {
@@ -114,9 +117,7 @@ export default {
     toggleMode() {
       this.mode = !this.mode;
     },
-    /*
-     * Called whenever the recording is inactive i.e. on pause/stop.
-     */
+     /* Called whenever the recording is inactive i.e. on pause/stop. */
     adjustRecDuration() {
       this.recDuration += this.dateWhenRecLastInactive 
                         - this.dateWhenRecLastActive;
@@ -218,20 +219,28 @@ export default {
   background-repeat: repeat;
 }
 
-.controls {
+.recorder-container {
+  margin-bottom: 1%;
   display: flex;
   flex-direction: row;
-  width: 100%;
   justify-content: center;
   gap: 1%;
 }
 
-.title {
-  text-align: center;
+.rec-controls{
+  background-color: transparent;
+  border-style: none;
+  font-size: 150%;
 }
 
-.recorder {
-  text-align: center;
+.page-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  flex:  2;
+  min-height: 50%;
+  overflow-y: hidden;
+  padding-top: 2%;
 }
 
 .page {
@@ -251,17 +260,7 @@ export default {
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.354);
 }
 
-.page-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  flex:  2;
-  min-height: 40%;
-  padding-top: 2%;
-
-}
-
-.editor {
+.editor-container {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -276,22 +275,7 @@ export default {
   height: fit-content;
 }
 
-.recorder-container {
-  margin-bottom: 1%;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  gap: 1%;
-}
-
-.editor2 {
+.editor {
   max-width: 80%;
 }
-
-.rec-controls{
-  background-color: transparent;
-  border-style: none;
-  font-size: 150%;
-}
-
 </style>

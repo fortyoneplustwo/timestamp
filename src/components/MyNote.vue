@@ -7,14 +7,14 @@
     <hr class="separator">
     <span ref="textarea"
           class="textarea"
-          @blur="handleLoseFocus"
-          v-model="text">
+          @blur="handleLoseFocus">
           {{ text }} 
     </span>
     <!-- <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
     <input ref="checkbox" type="checkbox" v-if="mode"/>
   </div>
 </template>
+
 
 <script>
 export default {
@@ -33,6 +33,11 @@ export default {
     }
   },
   computed: {
+    noteContent: {
+      get() {
+        return this.text
+      }
+    }
   },
   methods: {
     timestampToString() {
@@ -44,10 +49,13 @@ export default {
       this.$refs.textarea.contentEditable = true;
       this.$refs.textarea.focus();
     },
-    handleLoseFocus() {
+    /*
+     * Because we cannot v-model a span's textContent
+     * we wait for focus to be lost to grab the new text and update our data.
+     */
+    handleLoseFocus(e) {
       this.$refs.textarea.contentEditable = false;
-      console.log('changed to: %s', this.text);
-      // emit note-edited(this.$refs.textarea.textContent, note.id);
+      this.$emit('note-edited', this.id, e.target.textContent);
     },
     copy() {
       navigator.clipboard.writeText(this.text);
@@ -120,9 +128,6 @@ export default {
   margin-right: 1%;
   width: 100%;
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-}
-
-.highlight {
-  background-color: #ff0;
+  outline: none;
 }
 </style>

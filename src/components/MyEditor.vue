@@ -11,8 +11,7 @@
             ref="textarea" class="textarea" 
             :onkeydown="handleKeyboardShortcuts" 
             v-if="!mode">
-    <!-- Note: textarea used to be a contenteditable <p> tag -->
-    <button @click='addNote' class='return'><span>⮐</span> </button>
+    <button @click='saveNote' class='return'><span>⮐</span> </button>
   </div>
 </template>
 
@@ -21,18 +20,14 @@ export default {
   name: 'MyEditor',
   props: {
     mode: Boolean,
-    /*
-     * We need the following 3 variables to compute a note's timestamp.
-     */
+    /* We need the following 3 variables to compute a note's timestamp. */
     recDuration: Number,
     dateWhenRecLastActive: Date,
     dateWhenRecLastInactive: Date,
   },
   data() {
     return {
-      /*
-       * dateOfInput for the most recent non-empty input.
-       */
+      /* dateOfInput for the most recent non-empty input. */
       dateOfInput: 0,
       wasEmptyBeforeInput: true,
       writeMode: 'none'
@@ -55,10 +50,10 @@ export default {
       return timestamp;
     },
     /* 
-     * Emit note together with its timestamp.
-     * Empty note's timestamp = audio duration at time of save.
+     * Save note together with its timestamp.
+     * (Empty note's timestamp = rec duration at time of save.)
      */
-    addNote() {
+    saveNote() {
       const textarea = this.$refs.textarea;
       const content = textarea.value;
       textarea.value = '';
@@ -69,15 +64,13 @@ export default {
         timestamp = this.computeTimestamp(this.dateOfInput);
       }
       this.$emit('add-note', timestamp, content);
-      // this.waiting_for_press2 = false;
       this.wasEmptyBeforeInput = true;
     },
     handleKeyboardShortcuts(e) {
       if(e.keyCode === 13) {
-        this.addNote();
+        this.saveNote();
       } else if (e.key === 'l' && e.shiftKey && e.metaKey) {
-        this.writeMode = 'list';
-        this.$refs.editBtn.classList.add('list-mode');
+        // Implement this for bullet points
       } else if(e.key === 'Escape')  {
         this.writeMode = 'none';
         this.$refs.editBtn.classList.remove('list-mode');
@@ -92,9 +85,7 @@ export default {
         return false;
       }
     },
-    /*
-     * Log the date whenever input is detected on a previously empty textarea.
-     */
+     /* Log the date whenever input is detected on a previously empty textarea. */
     handleLogDateOnTextInput() {
       const currDate = new Date();
       if(this.$refs.textarea.value.length === 0) { 
@@ -110,17 +101,12 @@ export default {
 
 <style scoped>
 .textarea {
-  /*height: 100%;*/
   width: 100%;
   padding: 2%;
-  /*border-style: solid;*/
-  /*border-color: coral;*/
   border-style: none;
   border-radius: 10px;
-
   word-wrap: break-word;
   font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-  /*white-space: pre-line;*/
   font-size: medium;
   overflow-x: auto;
 }
@@ -158,5 +144,4 @@ export default {
   align-items:  center;
   height: fit-content;
 }
-
 </style>
