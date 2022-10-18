@@ -12,7 +12,7 @@ To build a free, cross-platform web application that synchronizes recorded audio
 - Double click a note on the page to edit.
   
 ## Design
-  - Implemented using the Options API.
+  - Implemented using the Vue Options API.
   - Typewriter-like UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
