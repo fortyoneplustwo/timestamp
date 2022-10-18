@@ -23,7 +23,7 @@ The application makes use of the MediaStream Recording API that comes with the b
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
   - Compute the audio duration each time the recorder is inactive.
   - Mark the date whenever the editor goes from being empty to being not empty.
-  - If a note is saved, its timestamp can be computed using the above properties i.e. `dateWhenReclastActive`, `dateWhenRecLastInactive`, `audioDuration` and `dateNoteTaken`.
+  - If a note is saved, its timestamp can be computed using the above properties i.e. `dateWhenRecLastActive`, `dateWhenRecLastInactive`, `audioDuration` and `dateNoteTaken`.
   
  **Complexity**: O(1).
  
