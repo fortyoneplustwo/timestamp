@@ -11,7 +11,7 @@ To build a free, cross-platform application that synchronizes recorded audio wit
 - Ability to pause the recording and resume at any time.
 - Double click a note on the page to edit.
   
-## Design
+## Design choices
   - Implemented using the Vue Options API.
   - Typewriter-like UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
@@ -19,7 +19,7 @@ To build a free, cross-platform application that synchronizes recorded audio wit
   - No use of third party libraries - only vanilla CSS.
   
 ## Audio recording
-The application makes use of the MediaStream Recording API that comes with the browser. Since the API does not track the length of recorded audio, the following algorithm was implemented to compute a note's timestamp:
+The application makes use of the MediaStream Recording API equiped within the browser. Because the API does not track the length of recorded audio, the following algorithm was implemented to compute a note's timestamp:
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
   - Compute the audio duration each time the recorder is inactive.
   - Mark the date whenever the editor goes from being empty to being not empty.
