@@ -1,7 +1,7 @@
 # timestamp
 
 ## Features
-- Hitting <Return> for a new line clears the text in the editor and adds the new note to the page together with its timestamp.
+- Hitting \<Return\> for a new line clears the text in the editor and adds the new note to the page together with its timestamp.
 - Click on a timestamp to seek to that section of the recording.
 - Ability to pause the recording and resume at any time.
 - Double click a note on the page to edit.
