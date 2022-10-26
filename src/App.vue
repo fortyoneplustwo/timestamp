@@ -1,25 +1,37 @@
 <template>
   <div class='container'>
     <div class='header'>
-          <h1 style="font-family: cursive; text-align: center;">Timestamp</h1>
+          <h1 style="text-align: center; color: black;">Timestamp</h1>
           <div class='recorder-container'>
             <button class="rec-controls" 
                     ref="recBtn" 
                     @click='handleRecButton'>
-                    🔴
+                    <i ref='recIcon' class="icon-circle-o" style="color: red;"></i>
             </button>
             <button class="rec-controls" 
                     ref="stopBtn" 
                     disabled="true" 
                     @click="handleStopButton">
-                    ⏹
+                    <i class="icon-square-o" style="color: blue;"></i>
             </button>
             <audio hidden controls ref="audio"></audio>
+            <button class="rec-controls"
+                    hidden="true"
+                    ref="deleteBtn"
+                    style="color: black;">
+                    <i class="icon-trash"></i>
+            </button>
+            <button class='rec-controls'
+                    ref='copyBtn'
+                    hidden
+                    @click="copySelectedNotes">
+              <i class="icon-clipboard" style="color: black;"></i>
+            </button>
             <button class="rec-controls" 
                     ref="saveBtn" 
-                    disabled="true" 
+                    hidden="true" 
                     @click="handleSaveButton">
-                    💾
+                    <i class="icon-download" style="color: black;"></i>
             </button>
           </div>
     </div>
@@ -30,7 +42,8 @@
             <MyNote @seek-to-timestamp="seekTo" 
                     :note="note"
                     @note-edited="replaceNote" 
-                    v-bind:mode="mode"/>
+                    :mode="mode"
+                    @toggle-selection="toggleNoteSelection"/>
            </li>
         </ul>
       </div>
@@ -42,7 +55,8 @@
                   :dateWhenRecLastActive="dateWhenRecLastActive"
                   :dateWhenRecLastInactive="dateWhenRecLastInactive" 
                   @add-note="addNote" 
-                  @toggle-mode="toggleMode"/>
+                  @toggle-mode="toggleMode"
+                  @copy-selected-notes="copySelectedNotes"/>
     </div>
   </div>
 </template>
@@ -60,7 +74,7 @@ export default {
   },
   data() {
     return {
-       /* Our datalist of note objects: {id, timestamp, text}. */
+       /* Our datalist of note objects: {id, timestamp, text, isChecked}. */
       notes: [],
       noteIdCounter: Number,
       /* Keep track of write/edit mode. May not need this feature after all. */
@@ -96,7 +110,8 @@ export default {
         { 
           id: id, 
           timestamp: timestamp, 
-          text: content
+          text: content,
+          isChecked: false
         }
       );
     },
@@ -116,6 +131,23 @@ export default {
     },
     toggleMode() {
       this.mode = !this.mode;
+      console.log(this.mode);
+    },
+    toggleNoteSelection(id, isSelected) {
+      for(let i=0; i < this.notes.length; i++) {
+        if (this.notes[i].id === id) {
+          this.notes[i].isChecked = isSelected;
+        }
+      }
+    },
+    copySelectedNotes() {
+      let selectedNotes = "";
+      for(let i=0; i < this.notes.length; i++) {
+          selectedNotes += this.notes[i].text + '\n'
+      }
+      console.log(selectedNotes);
+      navigator.clipboard.writeText(selectedNotes);
+      // deselect everything
     },
      /* Called whenever the recording is inactive i.e. on pause/stop. */
     adjustRecDuration() {
@@ -126,25 +158,32 @@ export default {
      * Record button can toggle between (start)resume/pause.
      * Stop is handled by a separate button.
      */
-    handleRecButton(e) {
-      const btn = e.target;
+    handleRecButton() {
+      // const btn = e.target;
+      let recIcon = this.$refs.recIcon;
       if (this.mediaRecorder.state != 'recording') {
         if (this.dateWhenRecLastActive === this.dateWhenRecLastInactive) {
           this.mediaRecorder.start();
         } else {
           this.mediaRecorder.resume();
         }
-        btn.textContent = '⏸';
+        recIcon.className = 'icon-pause';
       } else {
         this.mediaRecorder.pause();
-        btn.textContent = '🔴';
+        recIcon.className = 'icon-circle-o';
       }
     },
     handleStopButton() {
       this.mediaRecorder.stop();
-      this.$refs.recBtn.textContent = '🔴';
-      this.$refs.recBtn.disabled = true;
-      this.$refs.audio.hidden = false;
+    },
+    handleSaveButton() {
+      let wholePage = '';
+      for(let i=0; i < this.notes.length; i++ ) {
+        wholePage += this.notes[i].text + '\n'
+      }
+      let url = window.URL.createObjectURL(wholePage);
+      document.open(url);
+      
     },
     initRecorder() {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -174,14 +213,17 @@ export default {
             };
             // handle onstop event
             this.mediaRecorder.onstop = () => {
-              // Recording may have stopped without being paused.
+              // Recording may have stopped without having been paused.
               if (this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
                 this.dateWhenRecLastInactive = new Date();
                 this.adjustRecDuration();
               }
-              this.$refs.recBtn.disabled = true;
-              this.$refs.stopBtn.disabled = true;
-              this.$refs.saveBtn.disabled = false;
+              this.$refs.recBtn.hidden = true;
+              this.$refs.stopBtn.hidden = true;
+              this.$refs.audio.hidden = false;
+              this.$refs.saveBtn.hidden = false;
+              this.$refs.deleteBtn.hidden = false;
+              this.$refs.copyBtn.hidden = false;
               const blob = new Blob(this.chunks, {type: "audio/ogg; codecs=opus"});
               const audioURL = window.URL.createObjectURL(blob);
               this.$refs.audio.src = audioURL;
@@ -215,8 +257,9 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-image: url("../public/upfeathers.png");
-  background-repeat: repeat;
+  /*background-image: url("../public/upfeathers.png");*/
+  /*background-repeat: repeat;*/
+  background-color: white;
 }
 
 .recorder-container {
@@ -239,8 +282,9 @@ export default {
   justify-content: flex-end;
   flex:  2;
   min-height: 50%;
-  overflow-y: hidden;
   padding-top: 2%;
+  width: 70%;
+  align-self: center;
 }
 
 .page {
@@ -248,31 +292,36 @@ export default {
   flex-direction: column-reverse;
   margin-left: 15%;
   margin-right: 15%;
-  overflow: scroll;
-  border-style: solid;
-  border-color: #f2eecb;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  overflow-y: scroll;
+  align-self: center;
+  border-radius: 255px 15px 225px 15px/10px 700px 0px 255px;
+  border:solid 5px hsla(0, 95%, 35%, 1);
+  border-color: black;
   border-bottom: none;
+  border-width: medium;
   padding: 0.5%;
   height: fit-content;
-  background-color: #f2eecb;
+  background-color: white;
   box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.354);
+  width: 90%;
 }
 
 .editor-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #945100;
   padding: 1%;
   margin-top: auto;
   height: 5%;
-  border-style: ridge;
-  border-color: #945100;
-  border-radius: 10px;
-  border-width: thick;
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  border:solid 5px hsla(0, 95%, 35%, 1);
+  border-color: black;
+  border-width: medium;
   height: fit-content;
+  width: 70%;
+  align-self: center;
+  margin-bottom: 1%;
+  background-color: white;
 }
 
 .editor {

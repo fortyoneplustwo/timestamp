@@ -2,15 +2,16 @@
   <div class="editorContainer">
     <button ref="editBtn" 
             value="write" 
-            class='mode-button'>
+            @click='handleMarkButton'
+            class='mode-button'
+            disabled="true" >
             <i v-if="writeMode === 'list'" class="fa fa-list"></i>
     </button>
     <input type="text"
             placeholder="Hit <return> for a new line" 
             @input="handleLogDateOnTextInput" 
             ref="textarea" class="textarea" 
-            :onkeydown="handleKeyboardShortcuts" 
-            v-if="!mode">
+            :onkeydown="handleKeyboardShortcuts" >
     <button @click='saveNote' class='return'><span>⮐</span> </button>
   </div>
 </template>
@@ -71,6 +72,7 @@ export default {
         this.saveNote();
       } else if (e.key === 'l' && e.shiftKey && e.metaKey) {
         // Implement this for bullet points
+        console.log('list mode');
       } else if(e.key === 'Escape')  {
         this.writeMode = 'none';
         this.$refs.editBtn.classList.remove('list-mode');
@@ -84,6 +86,8 @@ export default {
         input.setSelectionRange(pos + 1, pos + 1);
         return false;
       }
+    },
+    handleMarkButton() {
     },
      /* Log the date whenever input is detected on a previously empty textarea. */
     handleLogDateOnTextInput() {
@@ -103,21 +107,25 @@ export default {
 .textarea {
   width: 100%;
   padding: 2%;
-  border-style: none;
-  border-radius: 10px;
   word-wrap: break-word;
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  /*font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;*/
   font-size: medium;
   overflow-x: auto;
+  background-color: white;
+  color: black;
+  border-color: blue;
 }
 
 .mode-button {
   background-color: transparent;
   border: none;
-  cursor: pointer;
+  /*prevent cursor event on hover*/
+  cursor: initial;
   outline: none;
   min-width: 10%;
   margin-left: 0;
+  color: black;
+  margin-right: 1%;
 }
 
 .edit-options {
@@ -134,6 +142,7 @@ export default {
   cursor: pointer;
   outline: none;
   min-width: 10%;
+  color: black;
 }
 
 .editorContainer {

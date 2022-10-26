@@ -8,10 +8,10 @@
     <span ref="textarea"
           class="textarea"
           @blur="handleLoseFocus">
-          {{ text }} 
+          {{ text }}
     </span>
     <!-- <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
-    <input ref="checkbox" type="checkbox" v-if="mode"/>
+    <input @click="handleSelectNote" ref="checkbox" type="checkbox" id="checkbox" v-if="mode"/>
   </div>
 </template>
 
@@ -27,6 +27,7 @@ export default {
     return {
       text: this.note.text,
       id: this.note.id,
+      isSelected: this.note.isChecked,
       timestamp: this.note.timestamp,
       timestampMin: Math.floor(this.note.timestamp / 60),
       timestampSec: this.note.timestamp - Math.floor(this.note.timestamp / 60) * 60
@@ -44,6 +45,9 @@ export default {
       let secString = this.timestampSec.toString();
       if(secString.length < 2) secString = '0' + secString;
       return this.timestampMin.toString() + ':' + secString;
+    },
+    handleSelectNote() {
+      this.$emit('toggle-selection', this.id, this.$refs.checkbox.checked);
     },
     handleDoubleClick() {
       this.$refs.textarea.contentEditable = true;
@@ -70,13 +74,14 @@ export default {
   flex-direction: row;
   height:  auto;
   width: 100%;
-  padding: 1% 2% 1% 2%;
+  padding: 0% 3% 0% 3%;
   outline: none;
   border-style: dotted;
   border-inline-end-style: hidden;
   border-inline-start-style: hidden;
-  border-top: none; 
-  border-color: rgb(30, 108, 253);
+  border: none;
+  /*border-top: none;*/
+  /*border-color: rgb(30, 108, 253);*/
   box-sizing: border-box;
   white-space: pre-wrap;
   background-color: transparent;
@@ -112,8 +117,9 @@ export default {
   cursor: pointer;
   border: none;
   margin-left: auto;
-  /* margin-right: 0; */
+ margin-right: 0; 
 }
+
 
 .separator{
   margin-left: 0;
@@ -127,7 +133,8 @@ export default {
 .textarea {
   margin-right: 1%;
   width: 100%;
-  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  /*font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;*/
   outline: none;
+  color: black;
 }
 </style>
