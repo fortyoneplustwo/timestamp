@@ -13,7 +13,7 @@ To build a free, cross-platform application that facilitates note taking during 
   
 ## Design choices
   - Implemented using the Vue Options API.
-  - Typewriter-like UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
+  - Typewriter-inspired UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
   - No use of third party libraries - only vanilla CSS.
