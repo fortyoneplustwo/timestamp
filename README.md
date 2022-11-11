@@ -6,14 +6,15 @@ A VueJS app that allows you to synchronize an audio recording to your notes usin
 To build a free, cross-platform application that facilitates note taking during lectures, presentations and interviews.
 
 ## Features
-- Hitting the `<Return>` key for a new line clears the text in the editor and adds the new note to the page together with its timestamp.
-- Clicking on a timestamp `t` will seek to `time = t` of the recording.
+- Press `<Return>` key to save a note.
+- Click on a timestamp `t` to seek to `time = t` of the recording.
 - Ability to pause the recording and resume at any time.
 - Double click a note on the page to edit.
+- Click the copy button to copy the full page of notes to the clipboard.
   
 ## Design choices
   - Implemented using the Vue Options API.
-  - Typewriter-inspired UI deemed suitable for live note-taking. Allows for implementation of the page and the editor as separate components.
+  - Typewriter-inspired UI deemed suitable for live note-taking. It also allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
   - No use of third party libraries - only vanilla CSS.
@@ -21,8 +22,8 @@ To build a free, cross-platform application that facilitates note taking during 
 ## Audio recording
 The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) equiped within the browser. Because the API does not track the duration of recorded audio, the following algorithm was implemented to compute a note's timestamp:
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
-  - Compute the audio duration each time the recorder is inactive.
-  - Mark the date whenever the editor goes from being empty to being not empty.
+  - Compute the audio duration each time the recorder becomes inactive.
+  - Mark the date when the user starts writing a note in the editor.
   - If a note is saved, its timestamp can be computed using the above properties i.e. `dateWhenRecLastActive`, `dateWhenRecLastInactive`, `audioDuration` and `dateNoteTaken`.
   
  **Complexity**: O(1).
@@ -31,7 +32,7 @@ The application makes use of the [MediaStream Recording API](https://developer.m
   Adjusting the `audioDuration` property every time the recorder becomes inactive acts as an accumulator and ensures that computing a timestamp does not depend on `n`.
   
 ## Issues
-  Only the Mozilla Firefox browser allows for highlighting of multiple notes on the page.
+  Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
   
 ## Project setup
 ```
