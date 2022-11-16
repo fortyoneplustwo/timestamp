@@ -31,6 +31,7 @@ The application makes use of the [MediaStream Recording API](https://developer.m
  **Complexity**: O(1).
  
  **Justification**
+ 
   Let `n` represent the amount of times the recording has been started, paused, resumed and stopped.
   Adjusting the `audioDuration` property every time the recorder becomes inactive ensures that the computation of a timestamp does not depend on `n`.
   
