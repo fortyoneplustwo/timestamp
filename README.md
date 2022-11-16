@@ -8,9 +8,9 @@ To build a free, cross-platform application that facilitates note taking during 
 ## Features
 - Press `<Return>` key to save a note.
 - Click on a timestamp `t` to seek to `time = t` of the recording.
-- Ability to pause the recording and resume at any time.
+- Pause the recording and resume at any time.
 - Double click a note to edit it.
-- Click the copy button to copy the full page of notes to the clipboard.
+- Click the copy button to copy all notes to the clipboard.
   
 ## Design choices
   - Implemented using the Vue Options API.
