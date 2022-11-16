@@ -22,7 +22,7 @@ To build a free, cross-platform application that facilitates note taking during 
 ## Audio recording
 The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so the following algorithm was implemented to compute a note's timestamp.
 
-## Algorithm
+## Timestamp algorithm
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
   - Compute the audio duration each time the recorder becomes inactive.
   - Mark the date whenever a user begins typing a new note.
