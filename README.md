@@ -9,7 +9,7 @@ To build a free, cross-platform application that facilitates note taking during 
 - Press `<Return>` key to save a note.
 - Click on a timestamp `t` to seek to `time = t` of the recording.
 - Ability to pause the recording and resume at any time.
-- Double click a note on the page to edit.
+- Double click a note to edit it.
 - Click the copy button to copy the full page of notes to the clipboard.
   
 ## Design choices
