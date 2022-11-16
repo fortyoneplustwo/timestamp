@@ -12,7 +12,7 @@ To build a free, cross-platform application that facilitates note taking during 
 - Double click a note to edit it.
 - Click the copy button to copy all notes to the clipboard.
   
-## Design choices
+## Design choices and implementation
   - Implemented using the Vue Options API.
   - Typewriter-inspired UI has the page growing from top to bottom as more notes are added. Such a design allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
