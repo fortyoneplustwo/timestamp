@@ -6,7 +6,7 @@ A VueJS app that allows you to synchronize an audio recording to your notes usin
 To build a free, cross-platform application that facilitates note taking during lectures, presentations and interviews.
 
 ## Features
-- Press `<Return>` key to save a note.
+- Press the `<Return>` key to save a note.
 - Click on a timestamp `t` to seek to `time = t` of the recording.
 - Pause the recording and resume at any time.
 - Double click a note to edit it.
