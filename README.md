@@ -20,7 +20,9 @@ To build a free, cross-platform application that facilitates note taking during 
   - No use of third party libraries - only vanilla CSS.
   
 ## Audio recording
-The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) equiped within the browser. Because the API does not track the duration of recorded audio, the following algorithm was implemented to compute a note's timestamp:
+The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so the following algorithm was implemented to compute a note's timestamp.
+
+## Algorithm
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
   - Compute the audio duration each time the recorder becomes inactive.
   - Mark the date when the user starts writing a note in the editor.
@@ -28,8 +30,9 @@ The application makes use of the [MediaStream Recording API](https://developer.m
   
  **Complexity**: O(1).
  
+ **Justification**
   Let `n` represent the amount of times the recording has been started, paused, resumed and stopped.
-  Adjusting the `audioDuration` property every time the recorder becomes inactive acts as an accumulator and ensures that computing a timestamp does not depend on `n`.
+  Adjusting the `audioDuration` property every time the recorder becomes inactive ensures that the computation of a timestamp does not depend on `n`.
   
 ## Issues
   Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
