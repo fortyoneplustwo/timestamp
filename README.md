@@ -36,6 +36,8 @@ The application makes use of the [MediaStream Recording API](https://developer.m
 ## Issues
   Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
   
+  **Possible solution**: The copy button solves this problem if you want to copy **all** notes.
+ 
 ## Project setup
 ```
 npm install
