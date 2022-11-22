@@ -17,7 +17,7 @@ To build a free, cross-platform application that facilitates note taking during 
   - Typewriter-inspired UI has the page growing from top to bottom as more notes are added. Such a design allows for implementation of the page and the editor as separate components.
   - The page is implemented as a list rendering of note components.
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
-  - No use of third party libraries - only vanilla CSS.
+  - Designed in vanilla CSS - no use of frameworks like bootstrap.
   
 ## Audio recording
 The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so the following algorithm was implemented to compute a note's timestamp.
@@ -37,6 +37,9 @@ The application makes use of the [MediaStream Recording API](https://developer.m
   Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
   
   **Possible solution**: The copy button solves this problem if you want to copy **all** notes.
+  
+## Credits
+[Handdrawn CSS](https://fxaeberhard.github.io/handdrawn.css/) by Francois-Xavier Aeberhard.
  
 ## Project setup
 ```
