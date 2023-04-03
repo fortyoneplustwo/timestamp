@@ -24,19 +24,20 @@ The application makes use of the [MediaStream Recording API](https://developer.m
 ## Timestamp algorithm
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped). Call these properties `dateWhenRecLastActive` and `dateWhenRecLastInactive` respectively.
   - Adjust the recording's duration, `recDuration`, each time the recorder becomes inactive.
-  - Mark the date, `dateNoteTaken`, whenever the user takes a new note. Its timestamp can be computed using the properties mentioned above.
-  
- **Complexity**: O(1)
- 
- **Justification**: Let `n` be the number of times the recording has been started + paused + resumed + stopped.
-  Adjusting the properties `dateWhenRecLastActive`, `dateWhenRecLastInactive` and `recDuration` is a constant time operation which happens at most `n` times. A note's timestamp can be computed in constant time using the following algorithm:
-   
-   ```
+  - Mark the date, `dateNoteTaken`, whenever the user takes a new note. Its timestamp can be computed using the following computation.
+
+  ```
    if dateWhenRecLastActive > dateWhenRecLastInactive then
     timestamp = audioDuration + (dateNoteTaken - dateWhenRecLastInactive)
    else 
     timestamp = audioDuration
    ```
+  
+ **Complexity**: O(1)
+ 
+ **Comments**: Let `n` represent the number of times the recording has been started + paused + resumed + stopped.
+  Adjusting the properties `dateWhenRecLastActive`, `dateWhenRecLastInactive` and `recDuration` is a constant time operation which can happen at most `n` times.
+   
   
 ## Issues
   Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
