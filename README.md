@@ -10,7 +10,7 @@ To build a free, cross-platform application that facilitates note taking during 
 - Click on a timestamp `t` to play the recorded audio at `time = t`.
 - Pause the recording and resume at any time.
 - Double click a note to edit it.
-- Click the copy button to copy all notes to the clipboard.
+- Click the copy button to copy the entire page of notes to the clipboard.
   
 ## Design choices and implementation
   - Implemented using the Vue Options API.
