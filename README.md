@@ -22,15 +22,22 @@ To build a free, cross-platform application that facilitates note taking during 
 The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so the following algorithm was implemented to compute a note's timestamp.
 
 ## Timestamp algorithm
-  - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped).
-  - Compute the audio duration each time the recorder becomes inactive.
-  - Mark the date whenever a user begins typing a new note.
-  - If a note is saved, its timestamp can be computed using the above properties i.e. `dateWhenRecLastActive`, `dateWhenRecLastInactive`, `audioDuration` and `dateNoteTaken`.
+  - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped). Call these properties `dateWhenRecLastActive` and `dateWhenRecLastInactive` respectively.
+  - Compute the recording's duration, `recDuration`, each time the recorder becomes inactive.
+  - Mark the date, `dateNoteTaken` whenever a user takes a new note.
+  - If a note is submitted to the page, its timestamp can be computed using the above  properties.
   
- **Complexity**: O(1).
+ **Complexity**: O(1)
  
- **Justification**: Let `n` represent the amount of times the recording has been started, paused, resumed and stopped.
-  Adjusting the `audioDuration` property every time the recorder becomes inactive ensures that the computation of a timestamp does not depend on `n`.
+ **Justification**: Let `n` be the number of times the recording has been started + paused + resumed + stopped.
+  Adjusting the properties `dateWhenRecLastActive`, `dateWhenRecLastInactive` and `recDuration` is a constant time operation which happens at most `n` times. A note's timestamp can be computed in constant time using the following algorithm:
+   
+   ```
+   if dateWhenRecLastActive > dateWhenRecLastInactive then
+    timestamp = audioDuration + (dateNoteTaken - dateWhenRecLastInactive)
+   else 
+    timestamp = audioDuration
+   ```
   
 ## Issues
   Only the Mozilla Firefox browser allows for highlighting of multiple notes across the page.
