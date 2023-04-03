@@ -7,7 +7,7 @@ To build a free, cross-platform application that facilitates note taking during 
 
 ## Features
 - Press the `<Return>` key to save a note.
-- Click on a timestamp `t` to seek to `time = t` of the recording.
+- Click on a timestamp `t` to play the recorded audio at `time = t`.
 - Pause the recording and resume at any time.
 - Double click a note to edit it.
 - Click the copy button to copy all notes to the clipboard.
@@ -19,13 +19,12 @@ To build a free, cross-platform application that facilitates note taking during 
   - A left margin separates the timestamps from the text and makes the page look like a notebook page.
   - Designed in vanilla CSS
 ## Audio recording
-The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so the following algorithm was implemented to compute a note's timestamp.
+The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so we have to keep track of it ourselves in order to calculate a note's timestamp.
 
 ## Timestamp algorithm
   - Keep track of the date when the audio recorder was last active (started/resumed) & inactive (paused/stopped). Call these properties `dateWhenRecLastActive` and `dateWhenRecLastInactive` respectively.
-  - Compute the recording's duration, `recDuration`, each time the recorder becomes inactive.
-  - Mark the date, `dateNoteTaken` whenever a user takes a new note.
-  - If a note is submitted to the page, its timestamp can be computed using the above  properties.
+  - Adjust the recording's duration, `recDuration`, each time the recorder becomes inactive.
+  - Mark the date, `dateNoteTaken`, whenever the user takes a new note. Its timestamp can be computed using the properties mentioned above.
   
  **Complexity**: O(1)
  
