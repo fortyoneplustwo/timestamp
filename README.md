@@ -28,9 +28,9 @@ The application makes use of the [MediaStream Recording API](https://developer.m
 
   ```
    if dateWhenRecLastActive > dateWhenRecLastInactive then
-    timestamp = audioDuration + (dateNoteTaken - dateWhenRecLastInactive)
+    timestamp = recDuration + (dateNoteTaken - dateWhenRecLastInactive)
    else 
-    timestamp = audioDuration
+    timestamp = recDuration
    ```
   
  **Complexity**: O(1)
