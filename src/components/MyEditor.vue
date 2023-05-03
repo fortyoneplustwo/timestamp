@@ -1,82 +1,58 @@
 <template>
   <div class="editorContainer">
-    <button ref="editBtn" 
-            value="write" 
-            @click='handleMarkButton'
-            class='mode-button'
-            disabled="true" >
-            <i v-if="writeMode === 'list'" class="fa fa-list"></i>
-    </button>
+    <!--div style="width: 15%;"></div-->
     <input type="text"
-            placeholder="Hit <return> for a new line" 
-            @input="handleLogDateOnTextInput" 
-            ref="textarea" class="textarea" 
+            placeholder="Hit <return> to timestamp a note"
+            @input="handleLogDateOnTextInput"
+            ref="textarea" class="textarea"
             :onkeydown="handleKeyboardShortcuts" >
-    <button @click='saveNote' class='return'><span>⮐</span> </button>
+    <!--div style="width: 15%;"></div-->
   </div>
+
 </template>
 
 <script>
 export default {
   name: 'MyEditor',
   props: {
-    mode: Boolean,
     /* We need the following 3 variables to compute a note's timestamp. */
     recDuration: Number,
     dateWhenRecLastActive: Date,
     dateWhenRecLastInactive: Date,
+    triggerReset: Boolean
   },
   data() {
     return {
-      /* dateOfInput for the most recent non-empty input. */
-      dateOfInput: 0,
-      wasEmptyBeforeInput: true,
-      writeMode: 'none'
+      /* dateNoteTaken for the most recent non-empty input. */
+      dateNoteTaken: 0,
+      wasEmptyBeforeInput: true
+    }
+  },
+  watch: {
+    triggerReset() {
+      this.$refs.textarea.value = "";
     }
   },
   methods: {
     /*
-     * Given dateOfInput, compute the timestamp.
-     * Must convert milliseconds -> seconds.
+     * Stamp note with dateNoteTaken.
      */
-    computeTimestamp(dateOfInput) {
-      let timestamp = 0;
-      if(this.dateWhenRecLastActive > this.dateWhenRecLastInactive) {
-        timestamp = this.recDuration 
-                  + (dateOfInput - this.dateWhenRecLastActive);
-      } else {
-        timestamp = this.recDuration;
-      }
-      timestamp = Math.floor(timestamp / 1000);
-      return timestamp;
-    },
-    /* 
-     * Save note together with its timestamp.
-     * (Empty note's timestamp = rec duration at time of save.)
-     */
-    saveNote() {
+    stampNote() {
       const textarea = this.$refs.textarea;
       const content = textarea.value;
       textarea.value = '';
-      let timestamp = 0;
       if(content.length === 0) {
-        timestamp = this.computeTimestamp(new Date());
+        this.$emit('add-note', new Date(), '');
       } else {
-        timestamp = this.computeTimestamp(this.dateOfInput);
+        this.$emit('add-note', this.dateNoteTaken, content);
       }
-      this.$emit('add-note', timestamp, content);
       this.wasEmptyBeforeInput = true;
     },
     handleKeyboardShortcuts(e) {
       if(e.keyCode === 13) {
-        this.saveNote();
-      } else if (e.key === 'l' && e.shiftKey && e.metaKey) {
-        // Implement this for bullet points
-        console.log('list mode');
-      } else if(e.key === 'Escape')  {
-        this.writeMode = 'none';
-        this.$refs.editBtn.classList.remove('list-mode');
-      } else if(e.keyCode === 9) { // Tab
+        this.stampNote();
+      } else if(e.keyCode === 9) {
+        // Have to insert tab character manually
         let input = e.target;
         const text = input.value;
         const pos = input.selectionStart;
@@ -87,16 +63,14 @@ export default {
         return false;
       }
     },
-    handleMarkButton() {
-    },
      /* Log the date whenever input is detected on a previously empty textarea. */
     handleLogDateOnTextInput() {
       const currDate = new Date();
-      if(this.$refs.textarea.value.length === 0) { 
+      if(this.$refs.textarea.value.length === 0) {
         this.wasEmptyBeforeInput = true;
       } else if(this.wasEmptyBeforeInput) {
-        this.dateOfInput = currDate;
         this.wasEmptyBeforeInput = false;
+        this.dateNoteTaken = currDate;
       }
     }
   }
@@ -105,21 +79,22 @@ export default {
 
 <style scoped>
 .textarea {
-  width: 100%;
-  padding: 2%;
+  width: 75%;
+  padding: 1%;
   word-wrap: break-word;
-  /*font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;*/
-  font-size: medium;
+  font-family: Lucida Sans Typewriter, Lucida Console, monaco, Bitstream Vera Sans Mono, monospace;
   overflow-x: auto;
+  font-size: 13px;
   background-color: white;
   color: black;
-  border-color: blue;
+  border-radius: 7px;
+  border-color: whitesmoke;
 }
 
 .mode-button {
   background-color: transparent;
   border: none;
-  /*prevent cursor event on hover*/
+  /*silence cursor event on hover*/
   cursor: initial;
   outline: none;
   min-width: 10%;
@@ -143,14 +118,14 @@ export default {
   outline: none;
   min-width: 10%;
   color: black;
+  margin-right: 0;
 }
 
 .editorContainer {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  align-items:  center;
-  height: fit-content;
 }
 </style>

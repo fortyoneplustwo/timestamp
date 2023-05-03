@@ -1,140 +1,65 @@
 <template>
-  <div class='note-container' @dblclick="handleDoubleClick">
-    <button @click="$emit('seek-to-timestamp', this.timestamp)" 
-            class='timestamp'>
-            {{ timestampToString() }}
-    </button>
-    <hr class="separator">
-    <span ref="textarea"
-          class="textarea"
-          @blur="handleLoseFocus">
-          {{ text }}
-    </span>
-    <!-- <button class='copy' v-if="mode" @click='copy'><i class="fa fa-copy"></i></button> -->
-    <input @click="handleSelectNote" ref="checkbox" type="checkbox" id="checkbox" v-if="mode"/>
-  </div>
+    <li contenteditable class="line" @change="handleNoteEdit">
+      <button contenteditable="false"
+              :value="timestampMillisecs"
+              @click="$emit('seek-to-timestamp', note.timestamp)"
+              class="timestamp-btn">
+              {{ timestampMinSec }}
+      </button>
+      <span class="noteContent">{{ note.text }}</span>
+    </li>
 </template>
-
 
 <script>
 export default {
   name: 'MyNote',
   props: {
     note: Object,
-    mode: Boolean
-  },
-  data() {
-    return {
-      text: this.note.text,
-      id: this.note.id,
-      isSelected: this.note.isChecked,
-      timestamp: this.note.timestamp,
-      timestampMin: Math.floor(this.note.timestamp / 60),
-      timestampSec: this.note.timestamp - Math.floor(this.note.timestamp / 60) * 60
-    }
-  },
+    index: Number
+	},
   computed: {
-    noteContent: {
-      get() {
-        return this.text
-      }
+    timestampMinSec() {
+      let min = Math.floor(this.note.timestamp / 60);
+      let sec = this.note.timestamp - Math.floor(this.note.timestamp / 60) * 60;
+      let zeroPaddedMin = min < 10 ? '0' + min.toString() : min.toString();
+      let zeroPaddedSec = sec < 10 ? '0' + sec.toString() : sec.toString();
+      return zeroPaddedMin + ':' + zeroPaddedSec;
+		},
+    timestampMillisecs() {
+      return this.note.timestamp.toString();
     }
-  },
-  methods: {
-    timestampToString() {
-      let secString = this.timestampSec.toString();
-      if(secString.length < 2) secString = '0' + secString;
-      return this.timestampMin.toString() + ':' + secString;
-    },
-    handleSelectNote() {
-      this.$emit('toggle-selection', this.id, this.$refs.checkbox.checked);
-    },
-    handleDoubleClick() {
-      this.$refs.textarea.contentEditable = true;
-      this.$refs.textarea.focus();
-    },
-    /*
-     * Because we cannot v-model a span's textContent
-     * we wait for focus to be lost to grab the new text and update our data.
-     */
-    handleLoseFocus(e) {
-      this.$refs.textarea.contentEditable = false;
-      this.$emit('note-edited', this.id, e.target.textContent);
-    },
-    copy() {
-      navigator.clipboard.writeText(this.text);
-    }
-  }
+	}
 }
 </script>
 
 <style scoped>
-.note-container {
-  display: flex;
-  flex-direction: row;
-  height:  auto;
-  width: 100%;
-  padding: 0% 3% 0% 3%;
-  outline: none;
-  border-style: dotted;
-  border-inline-end-style: hidden;
-  border-inline-start-style: hidden;
-  border: none;
-  /*border-top: none;*/
-  /*border-color: rgb(30, 108, 253);*/
-  box-sizing: border-box;
-  white-space: pre-wrap;
-  background-color: transparent;
-  /* height: fit-content; */
-  word-break: break-all;
-}
 
-.timestamp {
-  /*min-width: 100px;*/
-  width: 80px;
-  text-align: center;
-  display: inline-block;
-  cursor: pointer;
-  /*padding: 5px 16px;*/
-  padding-left: 0;
-  padding-right: 0;
-  font-size: 14px;
-  font-weight: 500;
-  vertical-align: middle;
-  border: 1px solid;
-  border-radius: 5%;
-  background-color: transparent;
-  border-color: #1b1f2326;
-  border-radius: 20%;
-  border: none;
-  color: darkred;
-  margin-right: 2%;
-  font-family: monospace;
-}
+  .line {
+    font-family: Lucida Sans Typewriter,Lucida Console,monaco,Bitstream Vera Sans Mono,monospace;
+    font-size: 13px;
+    padding-left: 1%;
+    padding-right: 1%;
+		position: relative;
+		display: flex;
+	height: 15px; /* this is a temp soln. check if editor is saving empty lines correctly */
+  }
 
-.checkbox {
-  display: flex;
-  cursor: pointer;
-  border: none;
-  margin-left: auto;
- margin-right: 0; 
-}
+  .line .timestamp-btn {
+    font-family: Lucida Sans Typewriter, Lucida Console, monaco, Bitstream Vera Sans Mono, monospace;
+    font-size: 12px;
+    outline: none;
+    box-shadow: none;
+    color: blue;
+    background: transparent;
+    margin-right: 0.5%;
+    margin-left: 1px;
+    padding-left: 0;
+		position: absolute;
+    user-select: none;
+    border: none;
+  }
 
-
-.separator{
-  margin-left: 0;
-  margin-right: 2%;
-  margin-top: -2%;
-  margin-bottom: -10%;
-  border-color: red;
-  z-index: 1;
-}
-
-.textarea {
-  margin-right: 1%;
-  width: 100%;
-  /*font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;*/
-  outline: none;
-  color: black;
-}
+	.line .noteContent {
+		padding-left: 50px;
+	}
 </style>
