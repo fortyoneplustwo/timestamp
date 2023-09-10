@@ -10,7 +10,7 @@ To build a free, cross-platform application that facilitates note taking during 
 
 ## Features
 - Click on a timestamp `t` to play the recorded audio at `time = t`.
-- Save notes in a text file.
+- Save notes to a text file.
   
 ## UI choices and implementation
 As an alternative to building my own text editor I decided to experiment with an html list element. The page is implemented as a content-editable unordered list. Each list item is a Vue component that holds a button, a margin and some text content.
