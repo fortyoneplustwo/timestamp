@@ -1,6 +1,7 @@
 # timestamp
 ## Demo
 https://timestamp-82e51.web.app
+Warning: This project is not mobile-friendly. 
 
 ## Description
 A single page application that allows you to synchronize an audio recording to your notes using timestamps.
