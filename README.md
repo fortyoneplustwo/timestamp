@@ -1,6 +1,6 @@
 # timestamp
 
-## Notestamp: an improved version of Timestamp
+## Notestamp: an improved version of Timestamp with a real rich text editor
 https://notestamp.com
 
 ## Demo
