@@ -1,4 +1,8 @@
 # timestamp
+
+## Notestamp: an improved version of Timestamp
+https://notestamp.com
+
 ## Demo
 https://timestamp-82e51.web.app
 Warning: This project is not mobile-friendly. 
