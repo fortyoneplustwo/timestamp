@@ -22,7 +22,7 @@ As an alternative to building my own text editor I decided to experiment with an
 The final result works exactly like a regular text editor except that pasting multiple lines has undefined behaviour, therefore pasting has been disabled.
 
 ## Audio recording
-The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so I implemented a dynamic programming algorithm to compute a note's timestamp. More below.
+The application makes use of the [MediaStream Recording API](https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API) native to the browser. The API does not track the duration of recorded audio, so I implemented an algorithm to compute a note's timestamp. More below.
 
 ## Timestamp algorithm
   - Keep track of 2 variables `dateWhenRecLastActive` and `dateWhenRecLastInactive`. Update them whenever the audio recorder is active (started/resumed) & inactive (paused/stopped).
@@ -35,12 +35,6 @@ The application makes use of the [MediaStream Recording API](https://developer.m
    else 
     timestamp = recDuration
    ```
-  
- **Complexity**: O(1)
- 
- **Comments**: Let `n` represent the number of times the recording has been started + paused + resumed + stopped.
-  Adjusting the properties `dateWhenRecLastActive`, `dateWhenRecLastInactive` and `recDuration` are constant time operations which can happen at most `n` times.
-
  
 ## Project setup
 ```
