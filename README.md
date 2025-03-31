@@ -1,14 +1,8 @@
-# timestamp
-
-## Notestamp: an improved version of Timestamp with a real rich text editor
-https://notestamp.com
+## Description
+A single page application that allows you to synchronize an audio recording to your notes using timestamps (an early prototype of https://notestamp.com).
 
 ## Demo
 https://timestamp-82e51.web.app
-Warning: This project is not mobile-friendly. 
-
-## Description
-A single page application that allows you to synchronize an audio recording to your notes using timestamps.
 
 ## Motivation
 To build a free web application that facilitates note taking during lectures, presentations and interviews.
@@ -17,7 +11,7 @@ To build a free web application that facilitates note taking during lectures, pr
 - Click on a timestamp `t` to play the recorded audio at `time = t`.
 - Download notes as a .txt file
   
-## UI choices and implementation
+## UI experimentation
 As an alternative to building my own text editor I decided to experiment with an html list element. The page is implemented as a content-editable unordered list. Each list item is a Vue component that holds a button, a margin and some text content.
 The final result works exactly like a regular text editor except that pasting multiple lines has undefined behaviour, therefore pasting has been disabled.
 
